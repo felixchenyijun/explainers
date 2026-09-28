@@ -1,0 +1,14 @@
+# Publish only reviewed copies in docs and the small publishing toolkit.
+/*
+!/.gitignore
+!/.gitattributes
+!/AGENTS.md
+!/README.md
+!/catalog.json
+!/docs/
+!/scripts/
+**/.DS_Store
+**/__pycache__/
+**/node_modules/
+**/.env
+**/.env.*

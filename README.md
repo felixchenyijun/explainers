@@ -1,0 +1,31 @@
+# Explainers
+
+Interactive educational explainers by Felix Chen.
+
+**Site:** https://felixchenyijun.github.io/explainers/
+
+The public collection covers the jagged AI frontier, inference, GPUs and TPUs, physical AI, operating systems, Kubernetes, Lean and gene-centered evolution. Each page contains its assumptions, research dates and references.
+
+## Publish
+
+Only the personal account **felixchenyijun** may publish this repository. The GitHub Pages source is `main:/docs`.
+
+1. Place a reviewed self-contained explainer at `docs/<slug>/index.html` and add its metadata to `catalog.json`.
+2. Run `python3 scripts/build-index.py` and `python3 scripts/check-site.py`, then check the actual page in desktop and mobile browsers.
+3. Stage the intended files, commit and run `python3 scripts/publish.py`. Verify the live Pages links before sharing.
+
+`scripts/gh-personal` uses a separate GitHub CLI configuration at `~/.config/gh-felixchenyijun` and checks the authenticated account. To authenticate that configuration, use:
+
+```sh
+env -u GH_TOKEN -u GITHUB_TOKEN GH_CONFIG_DIR="$HOME/.config/gh-felixchenyijun" gh auth login --hostname github.com --git-protocol https --web
+```
+
+Configure this checkout to use the personal credential helper (without changing global Git settings):
+
+```sh
+python3 scripts/setup-checkout.py
+```
+
+The source originals from local experiments are outside the publication tree and intentionally ignored. The public inference video series has captions and no audio; narrated local originals are excluded. The inference interactive bundle includes Three.js and its full MIT notice.
+
+No repository-wide reuse license has been selected. Preserve the included third-party notices.

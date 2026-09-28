@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; media-src data:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>LLM inference, one token at a time</title>
+<style>
+:root{color-scheme:dark;--bg:#0c1118;--panel:#121b26;--fg:#e4ecf4;--muted:#9eaec0;--line:#2b3a4c;--cyan:#77dfdb;--amber:#f2bc76;--purple:#b9a3fb;--red:#ff969e;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1100px;margin:auto;padding:32px 30px 70px}h1{font-size:34px;line-height:1.2;letter-spacing:-1.1px;margin:7px 0 13px;font-weight:650}h2{font-size:25px;line-height:1.3;letter-spacing:-.5px;margin:0 0 13px;font-weight:620}p{margin:10px 0 16px}a{color:var(--cyan);text-underline-offset:4px}button,input,select{font:inherit}button,select{border:1px solid var(--line);border-radius:6px;background:#1b2938;color:var(--fg);padding:7px 13px}button{cursor:pointer;min-height:40px}button:hover{border-color:var(--cyan)}button:disabled{opacity:.45;cursor:default}button[aria-pressed=true],button.primary{background:#203e45;border-color:#559c9d;color:#b6fffa}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--amber);outline-offset:4px}input[type=range]{accent-color:var(--cyan);width:100%;cursor:pointer;min-height:26px;margin:8px 0}select{max-width:100%;width:100%;margin-top:7px}label{display:block}.eyebrow{font:11px/1.5 var(--mono);color:var(--muted);letter-spacing:1.7px;text-transform:uppercase}.intro{font-size:18px;max-width:870px;color:#c5d3e1}.quiet,.caption{color:var(--muted);font-size:13px}.caption{margin:10px 0 0}.mono,code,pre,output{font-family:var(--mono)}code{font-size:.9em;color:#c9d8eb}strong{font-weight:630}.cyan{color:var(--cyan)}.amber{color:var(--amber)}.purple{color:var(--purple)}.red{color:var(--red)}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.toolbar .spacer{flex:1}.pill{font:12px var(--mono);padding:5px 8px;border:1px solid var(--line);border-radius:4px;color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:22px;margin:20px 0}.panel-title{font-size:17px;font-weight:630;margin:0 0 5px}.panel .eyebrow{margin-bottom:7px}section{margin-top:62px;scroll-margin-top:25px}.section-num{color:var(--cyan);font:13px var(--mono);margin-right:12px}.lede{max-width:840px;color:#c4d1df}.row{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}.row>*{min-width:0}.rule{border-top:1px solid var(--line);margin:26px 0}.note{border-left:2px solid var(--cyan);padding-left:15px;margin:17px 0;font-size:15px}.note.warn{border-color:var(--amber)}details{border-top:1px solid var(--line);margin-top:17px;padding-top:12px;font-size:15px}summary{cursor:pointer;color:#b9cce0;padding:3px 0;min-height:34px}details[open] summary{margin-bottom:12px;color:var(--cyan)}details p:last-child{margin-bottom:5px}.equation{background:#0d141e;border:1px solid #27374a;border-radius:5px;padding:13px 15px;margin:12px 0;font:13px/1.8 var(--mono);overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}.table-scroll{max-width:100%;overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:11px 10px;text-align:left;vertical-align:top}th{font-size:12px;color:var(--muted);font-weight:500}td:first-child{color:var(--fg);font-weight:580}small{font-size:12px;color:var(--muted)}svg{max-width:100%;height:auto}noscript{display:block;padding:20px;border:1px solid var(--amber)}.skip{position:absolute;left:-1000px}.skip:focus{left:10px;top:10px;background:var(--panel);z-index:5;padding:8px}.read-route{font-size:13px;color:var(--muted);margin:18px 0}.read-route a{margin-right:17px}
+/* The token machine stays readable by becoming vertical on narrow screens. */
+.machine{margin-top:24px}.tape{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 18px}.token{font:13px/1.3 var(--mono);padding:9px 11px;background:#192839;border:1px solid #36526a;border-radius:5px}.token.active{color:#b9fffa;background:#1e4146;border-color:var(--cyan)}.token.predicted{color:var(--purple);background:#2c2345;border-color:#8970c4}.token.future{color:#7d8ea5;background:transparent;border-style:dashed}.flow{display:grid;grid-template-columns:1fr 28px 1.55fr 28px 1fr;gap:8px;align-items:stretch}.flow-node{border:1px solid var(--line);border-radius:7px;padding:14px;min-width:0}.flow-node .title{font-weight:610;font-size:14px;margin-bottom:10px}.flow-node p{font-size:12px;line-height:1.5;color:var(--muted);margin:8px 0 0}.arrow{align-self:center;color:var(--muted);font-size:25px;text-align:center}.vector{display:flex;gap:4px;height:53px;align-items:center}.vector i{display:block;background:var(--cyan);width:11px;border-radius:2px;opacity:.7}.layer-path{display:flex;align-items:center;gap:6px;font:12px var(--mono);flex-wrap:wrap}.layer-path b{font-weight:500;color:var(--cyan);border:1px solid #3b5b65;background:#1a303a;border-radius:4px;padding:7px}.layer-path b:last-child{color:var(--purple);background:#252439;border-color:#504762}.cache{display:flex;align-items:center;gap:12px;border-top:1px solid #415044;margin-top:12px;padding-top:9px;font-size:12px;color:var(--amber)}.cache-blocks{display:flex;gap:3px;flex:1}.cache-blocks i{height:17px;flex:1;max-width:30px;border:1px solid #a67a41;background:#4c3a26;border-radius:2px}.cache-blocks i.new{background:var(--amber)}.logit-bars{display:grid;gap:5px;font:11px var(--mono)}.logit-line{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:5px}.logit-line i{display:block;background:var(--purple);height:7px;border-radius:2px}.machine-status{display:grid;grid-template-columns:180px 1fr;gap:20px;border-top:1px solid var(--line);padding-top:15px;margin-top:18px;font-size:14px;min-height:76px}.machine-status strong{color:var(--cyan)}.machine-status p{margin:0;color:#c6d4e2}.feedback{font:12px/1.5 var(--mono);color:var(--purple);margin-top:14px}.attention-grid{display:grid;grid-template-columns:66px repeat(5,1fr);gap:4px;margin:14px 0}.attention-grid span{font:11px/1.3 var(--mono);display:flex;align-items:center;justify-content:center;min-height:36px;border-radius:3px}.attention-grid .key{color:var(--muted);min-height:24px;font-size:10px}.attention-grid .qlabel{justify-content:flex-start;color:var(--muted);font-size:11px}.attention-grid .cell{background:#1a2938;color:#91a3b7}.attention-grid .selected{outline:1px solid #5ab0b1;color:#d9fffa}.attention-grid .masked{background:#0c131c;color:#506176}.token-selector{display:flex;flex-wrap:wrap;gap:5px}.token-selector button{font:12px var(--mono);padding:6px 9px;min-height:34px}.prob-row{display:grid;grid-template-columns:63px 1fr 52px;gap:10px;align-items:center;font:12px var(--mono);margin:9px 0}.track{height:14px;background:#0d141e;border-radius:3px;overflow:hidden}.fill{height:100%;background:var(--purple);border-radius:3px;transition:width .2s}.prob-row.excluded{opacity:.5}.prob-row .pct{text-align:right}.control-row{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:15px 0}.control-label{display:flex;justify-content:space-between;gap:12px;font-size:13px}.sample-result{font:13px var(--mono);color:var(--purple);min-height:26px}.numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}.number{padding:0 12px 0 0;border-right:1px solid var(--line)}.number:last-child{border-right:0}.number b{display:block;font:25px/1.4 var(--mono);letter-spacing:-.8px}.number span{font-size:12px;color:var(--muted)}.meter{display:flex;height:28px;background:#0a1018;border:1px solid var(--line);border-radius:4px;overflow:hidden}.meter div{transition:width .25s;flex-shrink:0}.meter .weights{background:var(--purple)}.meter .kv{background:var(--amber)}.legend{display:flex;gap:17px;flex-wrap:wrap;margin-top:8px;font:11px var(--mono);color:var(--muted)}.legend i{display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:1px}.roof-row{display:grid;grid-template-columns:113px 1fr 68px;align-items:center;gap:10px;font:12px var(--mono);margin:14px 0}.roof-row .track{height:18px}.roof-row .fill{background:var(--cyan)}#memory-bar{background:var(--amber)}.bottleneck{font-size:18px;font-weight:600;color:var(--amber);margin:15px 0 7px}.capacity{min-height:24px;font-size:13px;color:var(--muted)}.presets button{font-size:12px;min-height:35px;padding:5px 10px}.tune{border-top:0;margin:0;padding:0}.tune .control-row{margin-bottom:0}.tech-table{font-size:13px}.tech-table td:first-child{width:22%;white-space:nowrap}.tech-table td:nth-child(2){width:40%}.timeline{margin:16px 0;display:grid;grid-template-columns:46px repeat(12,minmax(0,1fr));gap:3px;font:11px var(--mono)}.timeline span{min-height:35px;border-radius:3px;display:flex;align-items:center;justify-content:center;background:#1a2532}.timeline .tick,.timeline .lane{background:none;color:var(--muted);font-size:10px;min-height:20px}.timeline .idle{background:repeating-linear-gradient(135deg,#14202b,#14202b 4px,#192632 4px,#192632 5px);color:#8498ad}.timeline .a{background:#245956;color:#b7fff6}.timeline .b{background:#453462;color:#e3d5ff}.timeline .c{background:#635032;color:#ffe0b0}.timeline .d{background:#2d4866;color:#c4e3ff}.timeline .e{background:#5a3442;color:#ffd3df}.comparison{display:flex;align-items:baseline;gap:13px;flex-wrap:wrap}.comparison b{font:22px var(--mono);color:var(--cyan)}.spec-tokens{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}.spec-token{flex:1;min-width:72px;border:1px solid #48576b;background:#1a2634;border-radius:5px;padding:10px 7px;text-align:center;font:13px var(--mono)}.spec-token small{display:block;margin-top:6px;font-size:10px}.spec-token.accept{border-color:#63baac;background:#183e3b;color:#a5f7dd}.spec-token.reject{border-color:#ca7881;color:var(--red);background:#392531}.spec-token.discard{opacity:.4;text-decoration:line-through}.spec-token.bonus{color:var(--purple);border-color:#7d6d9f}.check-list{display:grid;gap:13px;margin-top:18px}.quiz{border-bottom:1px solid var(--line);padding:0 0 12px}.quiz p{margin:0 0 8px;font-size:14px}.quiz button{font-size:12px;min-height:33px;padding:4px 10px}.quiz .answer{font-size:13px;color:var(--cyan);margin-top:8px;min-height:22px}.sources{font-size:13px}.sources li{margin:9px 0}.footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;font-size:12px;color:var(--muted)}[hidden]{display:none!important}
+@media(max-width:760px){main{padding:23px 18px 45px}h1{font-size:28px}h2{font-size:22px}.intro{font-size:16px}.panel{padding:16px}.row{grid-template-columns:1fr;gap:20px}.flow{grid-template-columns:1fr;gap:5px}.flow-node{padding:12px}.arrow{font-size:19px;line-height:1;transform:rotate(90deg)}.flow-node .vector{height:26px}.flow-node .vector i{max-height:24px}.machine-status{grid-template-columns:1fr;gap:5px;min-height:118px}.flow-node .title{margin-bottom:6px}.flow-node p{margin:6px 0 0}.logit-bars{grid-template-columns:1fr 1fr 1fr;gap:12px}.logit-line{grid-template-columns:1fr;gap:4px}.numbers{gap:10px}.number b{font-size:21px}.tech-table{min-width:630px}.timeline{gap:2px;grid-template-columns:30px repeat(12,minmax(0,1fr));font-size:10px}.timeline span{min-height:30px}.timeline .tick{font-size:8px}.read-route a{display:inline-block;margin-top:6px}section{margin-top:44px}.token{padding:7px 8px}.control-row{gap:13px}.roof-row{grid-template-columns:100px 1fr 62px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+@media print{body{background:white;color:black}.panel{background:white}button,.read-route,input,select{display:none}details{break-inside:avoid}section{break-before:auto}.quiet,.caption,.lede{color:#444}}
+</style>
+</head>
+<body>
+<a class="skip" href="#token">Skip to the explanation</a>
+<main>
+<div class="eyebrow">A visual refresher for software engineers</div>
+<h1>LLM inference, one token at a time.</h1>
+<p class="intro">An LLM repeatedly turns a prefix into a next-token distribution. Fast inference comes from <span class="cyan">reusing computation</span>, <span class="amber">moving fewer bytes</span>, and <span class="purple">sharing work</span>.</p>
+<div class="panel machine" aria-label="Interactive token generation diagram">
+ <div class="toolbar"><span class="eyebrow">Follow one request</span><span class="spacer"></span><button id="play" class="primary">Play steps</button><button id="next">Next step →</button><button id="reset" aria-label="Reset generation">Reset</button></div>
+ <div class="tape" id="token-tape" aria-label="Prompt and output tokens"></div>
+ <div class="flow">
+  <div class="flow-node"><div class="title">① Embed the input</div><div class="vector" aria-hidden="true"><i style="height:20px"></i><i style="height:40px"></i><i style="height:29px"></i><i style="height:50px"></i><i style="height:17px"></i><i style="height:36px"></i><i style="height:24px"></i><i style="height:43px"></i></div><p id="embed-note"></p></div>
+  <div class="arrow" aria-hidden="true">→</div>
+  <div class="flow-node"><div class="title">② Repeat the transformer block × L</div><div class="layer-path"><b>Q K V</b><span>→</span><b>attention</b><span>→</span><b>MLP</b></div><p>Attention reads context. The MLP transforms each position. Residuals carry both forward.</p><div class="cache"><span>KV cache</span><div class="cache-blocks" id="cache-blocks" aria-hidden="true"></div><span id="kv-count"></span></div></div>
+  <div class="arrow" aria-hidden="true">→</div>
+  <div class="flow-node"><div class="title">③ Project → sample</div><div class="logit-bars" id="machine-logits"></div><p>Final-position hidden state → vocabulary logits → one token.</p></div>
+ </div>
+ <div class="feedback" id="feedback"></div>
+ <div class="machine-status" aria-live="polite"><strong id="phase-title"></strong><p id="phase-copy"></p></div>
+ <p class="caption">Schematic decoder-only transformer. Word-sized toy tokens, illustrative scores, and modeled timings throughout; this page does not run an LLM.</p>
+</div>
+<p class="read-route">Read the diagrams for a 5-minute refresh; open the derivations for depth.<br><a href="#token">01 · The token machine</a><a href="#hardware">02 · Where time goes</a><a href="#techniques">03 · Techniques that change it</a></p>
+<noscript>JavaScript is disabled. The explanations and derivations remain readable; enable JavaScript to use the simulations.</noscript>
+
+<section id="token">
+<h2><span class="section-num">01</span>The token machine</h2>
+<p class="lede">Weights are learned during training and stay fixed during ordinary inference. The <strong>hidden states and KV cache</strong> are temporary, request-specific state. The model is a function; generation is the loop around it.</p>
+<details><summary>Under the hood · from UTF-8 to one decoder block</summary>
+ <p>A tokenizer maps text to integer IDs using a fixed vocabulary, often subword or byte-based pieces. One word can be several tokens; spaces and punctuation matter. Chat templates add role delimiters and special tokens. Embedding is a lookup: <code>X = E[token_ids]</code>, giving one <code>d_model</code>-dimensional vector per position. Detokenization turns emitted IDs back into text, sometimes buffering incomplete byte sequences.</p>
+ <p>For a common pre-norm, RoPE, gated-MLP decoder, one block looks like this (architecture details vary):</p>
+ <div class="equation">X ∈ ℝ[T × d_model]                         // omit batch axis
+Z = RMSNorm(X)
+Q = RoPE(Z Wq); K = RoPE(Z Wk); V = Z Wv
+A = softmax(Q Kᵀ / √d_head + causal_mask) V  // per query head
+Y = X + concat_heads(A) Wo                  // residual connection
+U = RMSNorm(Y)
+X_next = Y + (SiLU(U Wgate) ⊙ U Wup) Wdown  // gated MLP
+
+logits = RMSNorm(X_final[last_position]) W_vocab</div>
+ <p><strong>Attention mixes positions; the MLP mixes features at each position.</strong> Both contain learned projections. Normalization keeps activation scale controlled; residual connections preserve an additive stream across depth. RoPE rotates Q and K by position so their dot product depends on relative displacement. It is not a guarantee of reliable extrapolation beyond trained context.</p>
+ <p>With query heads <code>Hq</code> and KV heads <code>Hkv</code>, Q has shape <code>[Hq, T, dh]</code>; K and V have <code>[Hkv, T, dh]</code>. MHA uses one KV head per query head; GQA shares each KV head among a group of query heads; MQA shares a single KV head. Those are checkpoint design choices.</p>
+ <p>Training processes known next tokens in parallel and computes gradients. Inference usually does neither backpropagation nor an optimizer update. LoRA changes the effective weights; retrieval adds context; neither is what an ordinary KV cache does.</p>
+</details>
+<div class="row">
+ <div class="panel">
+  <div class="eyebrow">Look backward, never forward</div><p class="panel-title">Attention is a content-addressed read.</p><p class="quiet">Pick a query. Its scores become weights over allowed keys; those weights mix the values.</p>
+  <div id="query-buttons" class="token-selector" aria-label="Choose attention query position"></div>
+  <div class="attention-grid" id="attention-grid" role="img" aria-label="Causal attention matrix; rows are queries, columns are keys"></div>
+  <div id="attention-result" class="equation" aria-live="polite"></div>
+  <p class="caption">Columns = keys; rows = queries. “—” is a masked future position. Toy scores, one head. Selected-row brightness encodes weight.</p>
+  <details><summary>Why the cache is mathematically valid</summary><p>In a causal model, a past position cannot depend on future tokens. Its K and V therefore stay unchanged when the prefix grows. Store them <em>at every layer</em>; compute only the new position’s Q/K/V and MLP, then append its K/V.</p><p>The new query still reads the stored K/V. Caching removes repeated projections and past-position computation, not the need to attend to history. Q is not cached because future positions use their own queries.</p><div class="equation">a_t = softmax(q_t K_≤tᵀ / √dh)
+o_t = Σⱼ≤t a_tj v_j
+cache[layer].append(k_t, v_t)</div><p>For the visual only, V is two-dimensional: The [1,0], capital [0,1], of [0.5,0.5], France [2,1], is [−1,1]. The displayed result is their weighted sum. Real head vectors have many more coordinates.</p><p>Without KV reuse, each step reruns the whole prefix. With it, a dense-attention decode step has attention work linear in current context length; generating a long sequence still accumulates quadratic attention work overall.</p></details>
+ </div>
+ <div class="panel">
+  <div class="eyebrow">A distribution, then a decision</div><p class="panel-title">Sampling is outside the transformer.</p><p class="quiet">Temperature reshapes probabilities. Top-p removes the smallest-probability tail, then renormalizes.</p>
+  <div class="control-row"><label><span class="control-label">Temperature <output id="temp-value">1.0</output></span><input id="temperature" aria-label="Temperature" type="range" min="0" max="2" step="0.1" value="1"></label><label><span class="control-label">Top-p <output id="topp-value">1.00</output></span><input id="top-p" aria-label="Top-p" type="range" min="0.1" max="1" step="0.05" value="1"></label></div>
+  <div id="probabilities" aria-label="Next token probabilities"></div>
+  <div class="toolbar"><button id="sample">Draw a token</button><span id="sample-result" class="sample-result" aria-live="polite">Try T = 0, then T = 2.</span></div>
+  <p class="caption">Five invented logits, not predictions from a real model. Dim rows are excluded by top-p.</p>
+  <details><summary>Temperature, nucleus sampling, and stopping</summary><div class="equation">p_i = exp((z_i − max(z)) / T) / Σⱼ exp((z_j − max(z)) / T)</div><p>Subtracting the maximum avoids overflow without changing probabilities. At <code>T = 0</code>, use argmax directly: it is a greedy-decoding convention, not division by zero. Top-p retains the smallest sorted prefix whose cumulative probability reaches p; top-k instead keeps a fixed count.</p><p>Lower temperature sharpens the existing preference; it does not teach the model new facts. Beam search keeps multiple partial sequences and favors sequence likelihood, which is not necessarily correctness. Structured-output decoding can mask invalid next tokens according to a grammar.</p><p>Stop on an end token, a stop condition, or a token limit. Streaming sends completed text pieces as tokens arrive; it improves perceived latency without making the underlying model faster.</p></details>
+ </div>
+</div>
+<div class="note"><strong>The first token is different.</strong> Prefill processes all known prompt positions in parallel within each layer and samples the first output. Decode feeds that output back in, one position per request per iteration. You cannot ordinarily compute a future token before choosing the token it depends on.</div>
+</section>
+
+<section id="hardware">
+<h2><span class="section-num">02</span>Where the time actually goes</h2>
+<p class="lede">The GPU has fast arithmetic, a small on-chip working area, and much larger high-bandwidth memory (HBM). A token can spend more time <strong>waiting for weights and KV</strong> than multiplying them. Batching reuses the same weights across requests.</p>
+<div class="panel">
+ <div class="eyebrow">Experiment · one decode iteration</div><p class="panel-title">Give the GPU more work. Watch what runs out.</p>
+ <p class="quiet">Illustrative 8B dense model · 32 layers · 32 query heads · head width 128. Defaults: 80 GiB memory, 2 TB/s bandwidth, 150 TFLOP/s effective compute. These are assumptions, not a GPU benchmark.</p>
+ <div class="toolbar presets"><button data-preset="chat">One chat</button><button data-preset="throughput">Many short chats</button><button data-preset="long">Long-context crowd</button></div>
+ <div class="row" style="margin-top:20px">
+  <div>
+   <div class="control-row"><label><span class="control-label">Batch size <output id="batch-value"></output></span><input id="batch" aria-label="Batch size" type="range" min="0" max="7" step="1" value="0"></label><label><span class="control-label">Context / request <output id="context-value"></output></span><input id="context" aria-label="Context tokens per request" type="range" min="0" max="6" step="1" value="4"></label></div>
+   <div class="control-row"><label><span class="control-label">Weight storage</span><select id="weight-bits"><option value="16">16 bit · BF16 payload</option><option value="8">8 bit · ideal payload</option><option value="4">4 bit · ideal payload</option></select></label><label><span class="control-label">KV storage</span><select id="kv-bits"><option value="16">16 bit</option><option value="8">8 bit</option></select></label></div>
+   <label><span class="control-label">KV architecture comparison</span><select id="kv-heads"><option value="8">GQA · 8 KV heads for 32 query heads</option><option value="32">MHA · 32 KV heads</option><option value="1">MQA · 1 KV head</option></select></label>
+   <p class="caption">Head-count changes compare architectures, not lossless runtime settings. Rounded 8B weight count stays fixed to isolate KV effects.</p>
+   <details class="tune"><summary>Change the hardware assumptions</summary><div class="control-row"><label><span class="control-label">Bandwidth, TB/s <output id="bandwidth-value"></output></span><input id="bandwidth" aria-label="Memory bandwidth in terabytes per second" type="range" min="0.5" max="4" step="0.1" value="2"></label><label><span class="control-label">Compute, TFLOP/s <output id="compute-value"></output></span><input id="compute" aria-label="Compute in teraflops per second" type="range" min="50" max="500" step="10" value="150"></label></div></details>
+  </div>
+  <div aria-live="polite">
+   <div class="numbers"><div class="number"><b id="weights-number" class="purple"></b><span>GiB weights</span></div><div class="number"><b id="kv-number" class="amber"></b><span>GiB total KV</span></div><div class="number"><b id="step-number" class="cyan"></b><span>ms / step floor</span></div></div>
+   <div class="meter" role="img" id="memory-meter" aria-label="Memory payload compared with 80 GiB capacity"><div class="weights" id="weights-meter"></div><div class="kv" id="kv-meter"></div></div>
+   <div class="legend"><span><i style="background:var(--purple)"></i>weights, once</span><span><i style="background:var(--amber)"></i>KV, per request</span><span>80 GiB capacity</span></div>
+   <p id="capacity" class="capacity"></p>
+   <div class="roof-row"><span>Compute floor</span><div class="track"><div class="fill" id="compute-bar"></div></div><span id="compute-time"></span></div>
+   <div class="roof-row"><span>Memory floor</span><div class="track"><div class="fill" id="memory-bar"></div></div><span id="memory-time"></span></div>
+   <div id="bottleneck" class="bottleneck"></div><p id="roof-explanation" class="quiet"></p>
+  </div>
+ </div>
+ <details><summary>Derive the numbers · bytes, FLOPs, and the roofline</summary>
+  <div class="equation">KV bytes = 2 × B × S × L × Hkv × dh × bytes_per_KV_element
+               ↑   ↑   ↑   ↑      ↑
+             batch ctx layers KV heads head width
+The leading 2 counts keys AND values.
+
+BF16 GQA example: 2 × 32 × 8 × 128 × 2 = 128 KiB / token / request
+8,192 cached positions = 1 GiB / request; batch 32 = 32 GiB.
+8B BF16 weights ≈ 16 GB = 14.90 GiB. Total payload ≈ 46.90 GiB.
+
+FLOPs / decode step ≈ 2BP + 4BLS Hq dh
+Bytes read / step   ≈ P × bytes_per_weight + KV bytes
+Time floor          ≈ max(FLOPs / FLOPs_per_second,
+                          Bytes / bytes_per_second)</div>
+  <p><code>P = 8 × 10⁹</code> approximates parameters used in matrix multiplies. Multiply-add counts as two FLOPs. Attention contributes both QKᵀ and AV, using <em>query</em> heads. Weight reads are shared across the batch; KV reads grow with it. Ignoring KV and activation traffic, BF16 linear layers have arithmetic intensity about <code>B FLOP/byte</code>.</p>
+  <p>This is an optimistic single-device model: one weight read and one KV read per step, ideal reuse, no kernel-launch overhead, no communication, no softmax/norm cost, no new KV writes, and no temporary buffers or quantization metadata. The result is a modeled lower bound, not achieved latency. Effective compute stays fixed when bits change; real low-bit kernels may be faster or slower. A payload below 80 GiB is necessary, not sufficient, to fit.</p>
+  <p>Real shapes matter: tiny matrix-vector operations may underuse compute units; larger matrix-matrix operations often do better. Long-context attention can dominate either phase. FlashAttention and hardware caches change traffic, while sparse/windowed attention and latent KV representations change the cost model itself.</p>
+  <p>See the <a href="https://jax-ml.github.io/scaling-book/inference/">JAX scaling book’s inference analysis</a> and <a href="https://arxiv.org/html/2407.21783v2#S3.T3">Meta’s model dimensions</a>.</p>
+ </details>
+</div>
+<div class="row">
+ <div><p class="panel-title">Two clocks, two user experiences.</p><p><strong>TTFT</strong> is time to first token: queueing + uncached prefill + first sample. <strong>Inter-token latency</strong> is the gap between streamed tokens. Aggregate tokens/s measures service throughput; it can rise while individual users wait longer.</p></div>
+ <div><p class="panel-title">A useful debugging order.</p><p>Separate queue time, prefill, and decode. Then inspect memory capacity, bandwidth, compute utilization, and communication. Compare p50 and p95 under realistic arrival rates, input lengths, and output lengths.</p></div>
+</div>
+<details><summary>From a request to a running GPU kernel</summary><p>A server tokenizes the request, looks up reusable prefix blocks, reserves cache space, and schedules work. The runtime maps tensor operations to GPU kernels. Fused kernels avoid writing intermediates to HBM; optimized attention tiles data through on-chip memory; graph replay can reduce host launch overhead. The sampler produces a token, the server streams it, and the scheduler chooses the next iteration’s requests.</p><p>Weights generally stay resident in device memory between iterations. “Read weights every step” refers to feeding compute from HBM, not reloading a checkpoint from disk or the CPU. Offloading to host RAM can make a larger model fit, but adds transfer and synchronization costs.</p><p>With <code>N</code> output tokens, generation time is roughly <code>TTFT + (N − 1) × mean inter-token latency</code>, plus transport effects. Output-token budget is therefore a direct latency and cost knob. A long prompt and a long answer stress different parts of the service.</p></details>
+</section>
+
+<section id="techniques">
+<h2><span class="section-num">03</span>Every technique removes a different kind of waste</h2>
+<p class="lede">Ask what resource is scarce, and what contract can change. Scheduling and exact reuse preserve the computation’s meaning. Quantization changes numerical precision. Search and reasoning intentionally spend more work to seek a better answer.</p>
+<div class="table-scroll"><table class="tech-table"><thead><tr><th>Technique</th><th>What it changes</th><th>The catch</th></tr></thead><tbody>
+ <tr><td>KV cache</td><td>Reuse past per-layer K/V instead of rerunning the prefix.</td><td>Still reads history; cache grows with context.</td></tr>
+ <tr><td>FlashAttention</td><td>Tile attention through fast on-chip memory; never write the full score matrix to HBM.</td><td>Dense prefill arithmetic is still quadratic.</td></tr>
+ <tr><td>PagedAttention</td><td>Map logical KV blocks to scattered physical blocks; allocate on demand.</td><td>Reduces allocation waste, not bytes per KV element.</td></tr>
+ <tr><td>Continuous batching</td><td>Fill a finished request’s slot at an iteration boundary.</td><td>Throughput competes with per-request latency.</td></tr>
+ <tr><td>Chunked prefill</td><td>Split long prompts so active decodes can keep making progress.</td><td>Chunk size trades prompt progress for decode latency.</td></tr>
+ <tr><td>Prefix caching</td><td>Reuse KV for an identical, valid token prefix.</td><td>Saves repeated prefill, not future decode reads.</td></tr>
+ <tr><td>Quantization</td><td>Use fewer bits for weights, activations, and/or KV.</td><td>Accuracy and kernel efficiency must be measured.</td></tr>
+ <tr><td>GQA / MQA</td><td>Share KV heads across distinct query heads.</td><td>An architecture choice; needs compatible weights.</td></tr>
+ <tr><td>Speculative decoding</td><td>Draft cheaply; verify several positions in one target pass.</td><td>Only accepted prefixes pay off; draft cost matters.</td></tr>
+ <tr><td>Parallelism / MoE</td><td>Distribute layers, matrices, requests, or experts.</td><td>Communication, routing, and idle stages cost time.</td></tr>
+</tbody></table></div>
+
+<div class="row">
+ <div class="panel"><div class="eyebrow">Experiment · the scheduler</div><p class="panel-title">An empty slot is wasted weight reuse.</p><p class="quiet">Five ready requests need 2, 5, 3, 2, and 4 output steps. Two slots. Switch the scheduling rule.</p><div class="toolbar"><button id="static-batch" aria-pressed="true">Static batches</button><button id="continuous-batch" aria-pressed="false">Continuous batching</button></div><div id="timeline" class="timeline" role="img" aria-label="Two-slot decode schedule"></div><div class="comparison"><b id="schedule-ticks"></b><span id="schedule-util" class="quiet"></span></div><p id="schedule-copy" class="quiet"></p><p class="caption">Each colored cell is one request-token step; stripes are idle. All prompts are already prefilled. Equal-duration steps isolate slot utilization, not real speedup.</p></div>
+ <div class="panel"><div class="eyebrow">Experiment · speculation</div><p class="panel-title">Guess serially. Check in parallel.</p><p class="quiet">A cheap draft proposes four tokens. The target checks all their conditional distributions together.</p><label><span class="control-label">Accepted draft prefix <output id="accepted-value"></output></span><input id="accepted" aria-label="Accepted draft prefix length" type="range" min="0" max="4" step="1" value="2"></label><div id="spec-tokens" class="spec-tokens"></div><p id="spec-copy" class="quiet" aria-live="polite"></p><details><summary>How exact speculative sampling stays exact</summary><p>Let <code>p</code> be the target distribution and <code>q</code> the draft distribution at the same prefix. For a draft token <code>x ~ q</code>:</p><div class="equation">accept x with probability min(1, p(x) / q(x))
+first rejection → draw replacement from normalize(max(p − q, 0))
+all accepted → draw one bonus token from target p</div><p>For <code>q(x)=0.50</code> and <code>p(x)=0.30</code>, accept with probability 0.60. The correction redistributes rejected probability mass. Discard the speculative suffix after the first rejection: its conditionals assumed a prefix that no longer exists.</p><p>Use the actual decoding distributions after temperature/filtering. Correct acceptance and correction preserve the target distribution, not necessarily the same output for a fixed random seed. Simply keeping tokens the target “likes” is not exact sampling. The slider depicts possible outcomes, not a simulated acceptance probability.</p><p>Accepted tokens plus one correction/bonus advance the output, subject to stopping conditions. Target verification can reuse weight reads across positions; drafting is still work. Large batches, poor acceptance, or expensive verification can eliminate the benefit. <a href="https://proceedings.mlr.press/v202/leviathan23a/leviathan23a.pdf">Original algorithm and proof</a>.</p></details></div>
+</div>
+
+<details><summary>Memory deep dive · FlashAttention, paging, and prefix reuse</summary>
+ <div class="row"><div><p class="panel-title">FlashAttention: change the calculation’s working set.</p><svg viewBox="0 0 420 160" role="img" aria-label="Q K V tiles move from HBM into small SRAM, which maintains a running softmax and writes the output"><rect x="5" y="30" width="120" height="104" rx="6" fill="#1a2838" stroke="#496076"/><text x="20" y="55" fill="#cbd6e5" font-size="14">HBM</text><text x="20" y="82" fill="#77dfdb" font-size="13">Q, K, V tiles</text><text x="20" y="113" fill="#9eaec0" font-size="12">large, slower</text><path d="M130 65H182m-8-6 8 6-8 6" fill="none" stroke="#77dfdb" stroke-width="2"/><rect x="190" y="10" width="215" height="125" rx="6" fill="#1d343c" stroke="#559c9d"/><text x="205" y="36" fill="#b6fffa" font-size="14">On-chip SRAM</text><text x="205" y="63" fill="#cbd6e5" font-size="12">score one tile</text><text x="205" y="84" fill="#cbd6e5" font-size="12">update running max + sum</text><text x="205" y="105" fill="#cbd6e5" font-size="12">accumulate weighted V</text><path d="M190 120H138m8-6-8 6 8 6" fill="none" stroke="#b9a3fb" stroke-width="2"/><text x="120" y="155" fill="#b9a3fb" font-size="12">write the final output, not T × T scores</text></svg><p>Softmax seems to require the whole row. It does not: maintain a running maximum, normalizing sum, and weighted-value accumulator. When a new tile raises the maximum, rescale old accumulators. This yields the same dense attention mathematically, with ordinary floating-point differences.</p><div class="equation">m′ = max(m, max(scores_tile))
+ℓ′ = exp(m−m′) ℓ + Σ exp(scores_tile−m′)
+o′ = exp(m−m′) o + Σ exp(scores_tile−m′) v
+final attention output = o / ℓ</div></div><div><p class="panel-title">Paging: change where persistent state lives.</p><div class="equation">Logical request blocks:  [0] [1] [2]
+Block table:              ↓   ↓   ↓
+Physical GPU blocks:     [7] [2] [9]
+
+Shared prefix:
+request A → [7] [2] [9]
+request B → [7] [2] [4]
+             shared   private suffix</div><p>No need to reserve one giant contiguous buffer for a guessed maximum output length. Allocate blocks as tokens arrive, reclaim finished sequences, and share immutable prefix blocks. Partial blocks and metadata still consume space; writes to shared state need copy-on-write or equivalent safeguards.</p><p>Prefix reuse requires the same preceding tokens, model weights, positions, and relevant execution configuration. The same paragraph later in a different conversation is not the same cache entry. Prefix caching avoids computing those tokens again, but decode still attends to their K/V.</p><p>These techniques compose: paging manages persistent KV placement; FlashAttention manages the working set of an attention calculation.</p></div></div>
+ <p class="sources"><a href="https://arxiv.org/abs/2205.14135">FlashAttention paper</a> · <a href="https://arxiv.org/abs/2309.06180">PagedAttention paper</a> · <a href="https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/">Prefix cache documentation</a></p>
+</details>
+<details><summary>Numerics deep dive · what 4-bit actually means</summary>
+ <p>Quantization maps real values to a smaller discrete set, usually with scales per group or channel. A simple symmetric form is <code>q = clamp(round(w/s), q_min, q_max)</code>; reconstruct <code>ŵ = s × q</code>. Outliers can force a coarse scale that damages small, meaningful values. Calibration and methods such as AWQ choose quantization parameters to limit harmful error.</p>
+ <div class="equation">Toy scale s = 0.2, signed 4-bit range [−8, 7]
+weights:         [−0.91,  0.08,  0.73,  1.20]
+integer codes:   [   −5,     0,     4,     6]
+reconstructed:   [−1.00,  0.00,  0.80,  1.20]</div>
+ <p><code>W4A16</code> means 4-bit weights and 16-bit activations. KV precision is independent. “4× smaller” compares ideal 4-bit versus 16-bit weight payload; scales, zero points, padding, and unquantized tensors reduce that saving. Low-bit weights may be unpacked and dequantized inside kernels. Fewer stored bits do not automatically mean faster arithmetic.</p>
+ <p>Evaluate task accuracy, long-context behavior, outliers, throughput, and latency on the actual kernels. Quantization error is a model-quality tradeoff, unlike exact caching. <a href="https://arxiv.org/abs/2306.00978">AWQ</a> · <a href="https://arxiv.org/abs/2305.13245">GQA architecture</a>.</p>
+</details>
+<details><summary>Scale-out deep dive · tensors, pipelines, experts, and disaggregation</summary>
+ <div class="table-scroll"><table><thead><tr><th>Split what?</th><th>Mental model</th><th>What can dominate?</th></tr></thead><tbody><tr><td>Data parallel</td><td>Independent model replicas serve different requests.</td><td>More throughput; no inherent speedup of one request. Duplicated weights.</td></tr><tr><td>Tensor parallel</td><td>GPUs each calculate pieces of a layer’s matrices.</td><td>Frequent collectives and interconnect bandwidth/latency.</td></tr><tr><td>Pipeline parallel</td><td>GPU 0 runs early layers; GPU 1 runs later layers.</td><td>A token traverses every stage. Microbatches fill bubbles; imbalance wastes capacity.</td></tr><tr><td>Expert parallel</td><td>A router sends tokens to selected MLP experts on different GPUs.</td><td>Dispatch/combine traffic, uneven load, small expert batches.</td></tr><tr><td>Prefill/decode disaggregation</td><td>Separate worker pools for prompt processing and token generation.</td><td>KV transfer and orchestration must pay for workload specialization.</td></tr></tbody></table></div>
+ <p>In a mixture-of-experts model, only selected experts run for each token. <em>Active</em> parameters help estimate arithmetic; <em>total</em> parameters matter for weight residency. A batch may touch many experts in aggregate. MoE does not make a large total checkpoint take the memory of its active parameter count.</p>
+ <p>Sliding-window or sparse attention reduces the positions read; it changes the attention pattern and needs model support. Multi-head latent attention uses a compressed latent KV representation, so the ordinary KV equation above must change. These are architectural choices, not interchangeable server flags.</p>
+ <p><a href="https://nvidia.github.io/TensorRT-LLM/1.2.0/features/parallel-strategy.html">NVIDIA parallelism guide</a> · <a href="https://arxiv.org/abs/2405.04434">DeepSeek-V2 latent attention</a> · <a href="https://docs.vllm.ai/en/latest/configuration/optimization/">vLLM scheduling and tuning</a>.</p>
+</details>
+<details><summary>Beyond speed · reasoning tokens, best-of-N, search, and verification</summary>
+ <p>There are two different optimization problems: make the same model distribution cheaper to sample, or spend a fixed budget on better answers. Exact speculation targets the first. Inference-time compute targets the second.</p>
+ <div class="equation">Serial reasoning:   prompt → intermediate tokens → answer
+Parallel sampling:  prompt → N candidates → select or vote
+Search / revision:  candidate → verifier / tools → revise or branch</div>
+ <p>Longer reasoning uses more sequential decode and cache. Parallel candidates offer parallel work but increase total tokens and memory. Verifiers, tests, and tools can help select useful answers; a weak verifier can reward plausible mistakes. More tokens or more candidates are not a monotonic guarantee of better results.</p>
+ <p>Retrieval changes the evidence in the prompt; tool calls add external computation and round trips. Distillation trains a smaller model to imitate a larger one, shifting cost from serving to training. Evaluate answer quality per dollar or per latency budget, not only raw tokens/s. <a href="https://arxiv.org/abs/2408.03314">Research on allocating test-time compute</a>.</p>
+</details>
+<div class="panel"><div class="eyebrow">Check your mental model</div><p class="panel-title">Three predictions before you leave.</p><div class="check-list">
+ <div class="quiz" data-answer="0"><p>1. The weights fit, but 32 long chats run out of memory. What should you inspect first?</p><button data-choice="0">KV footprint</button> <button data-choice="1">Temperature</button><div class="answer" aria-live="polite"></div></div>
+ <div class="quiz" data-answer="1"><p>2. FlashAttention makes dense attention’s arithmetic linear in prompt length.</p><button data-choice="0">True</button> <button data-choice="1">False</button><div class="answer" aria-live="polite"></div></div>
+ <div class="quiz" data-answer="0"><p>3. Exact speculative sampling can preserve the target distribution.</p><button data-choice="0">Yes, with correction</button> <button data-choice="1">No, drafts always bias it</button><div class="answer" aria-live="polite"></div></div>
+ </div></div>
+</section>
+<details class="sources"><summary>Primary sources &amp; a path deeper</summary><p>The diagrams are original teaching models. The architecture and algorithms are grounded in the sources below; hardware numbers are explicitly hypothetical. Source review: September 6, 2026.</p><ol><li><a href="https://github.com/meta-llama/llama3/blob/main/llama/model.py">Meta Llama 3 reference implementation</a> — the decoder block in executable form. <a href="https://huggingface.co/docs/transformers/main/cache_explanation">Hugging Face’s cache explanation</a> covers cache shape and use.</li><li><a href="https://jax-ml.github.io/scaling-book/inference/">JAX scaling book: inference</a> — work through bytes, FLOPs, and batching.</li><li><a href="https://arxiv.org/abs/2205.14135">FlashAttention</a> and <a href="https://arxiv.org/abs/2309.06180">PagedAttention</a> — distinguish working-set optimization from cache allocation.</li><li><a href="https://proceedings.mlr.press/v202/leviathan23a/leviathan23a.pdf">Speculative decoding</a> — the acceptance correction and distribution-preservation proof.</li><li><a href="https://docs.vllm.ai/en/latest/configuration/optimization/">vLLM tuning guide</a> — connect the ideas to real scheduling and memory controls.</li></ol></details>
+<div class="footer">Scope: primarily dense, causal, decoder-only transformers. Architecture exceptions are called out in the deep dives. No network requests, external assets, or model API calls are made by this page.</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const text = (id, value) => { $(id).textContent = value; };
+const fmt = n => n.toLocaleString('en-US');
+const words = ['The', 'capital', 'of', 'France', 'is', 'Paris', '.', '<eos>'];
+let phase = 0, timer = null;
+
+function renderMachine() {
+  const processed = 5 + phase;
+  $('token-tape').replaceChildren(...words.map((word, i) => {
+    const span = document.createElement('span');
+    span.className = 'token ' + (i === processed ? 'predicted' : i > processed ? 'future' : (phase === 0 || i === processed - 1) ? 'active' : '');
+    span.textContent = word;
+    span.title = i === processed ? 'Selected output; not in KV yet' : i > processed ? 'Not generated yet' : 'Already processed into KV';
+    return span;
+  }));
+  $('cache-blocks').innerHTML = Array.from({length:processed}, (_,i) => '<i class="' + ((phase === 0 || i === processed - 1) ? 'new' : '') + '"></i>').join('');
+  text('kv-count', processed + ' positions');
+  text('embed-note', phase === 0 ? '5 known prompt tokens → 5 vectors. Positions run together within each layer.' : 'Only “' + words[processed - 1] + '” is new. Past positions reuse their cached K/V.');
+  const examples = phase === 0 ? [['Paris',70],['Lyon',20],['other',10]] : phase === 1 ? [['.',81],['and',12],['other',7]] : [['<eos>',88],['The',8],['other',4]];
+  $('machine-logits').replaceChildren(...examples.map(([word,p])=>{
+    const row=document.createElement('div'); row.className='logit-line';
+    const label=document.createElement('span'); label.textContent=word;
+    const bar=document.createElement('i'); bar.style.width=p+'%';
+    row.append(label,bar); return row;
+  }));
+  text('feedback', phase < 2 ? '↳ Selected “' + words[processed] + '” becomes the next iteration’s input.' : '■ Selected <eos>: stop. There is no need to run the end token through the model.');
+  text('phase-title', ['Prefill → first token', 'Decode 1 → second token', 'Decode 2 → stop'][phase]);
+  text('phase-copy', [
+    'All 5 prompt positions create K/V. The last position’s logits select “Paris”. It is output now, but its own K/V will be computed on the next pass.',
+    '“Paris” queries the 5 cached positions plus itself. Its K/V is appended at each layer; the resulting logits select a period.',
+    'The period queries the 6 cached positions plus itself. The model selects the end token and generation finishes.'
+  ][phase]);
+  $('next').disabled=phase===2;
+}
+function pause(){clearInterval(timer);timer=null;text('play','Play steps');}
+$('next').addEventListener('click',()=>{pause();phase=Math.min(2,phase+1);renderMachine();});
+$('reset').addEventListener('click',()=>{pause();phase=0;renderMachine();});
+$('play').addEventListener('click',()=>{
+  if(timer){pause();return;}
+  if(phase===2){phase=0;renderMachine();}
+  text('play','Pause');
+  timer=setInterval(()=>{phase++;renderMachine();if(phase===2)pause();},2600);
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+renderMachine();
+
+function softmax(scores) {
+  const max = Math.max(...scores);
+  const exps = scores.map(s=>Math.exp(s-max));
+  const sum = exps.reduce((a,b)=>a+b,0);
+  return exps.map(e=>e/sum);
+}
+function distribution(logits, temperature, topP) {
+  if(temperature===0) return logits.map((_,i)=>i===logits.indexOf(Math.max(...logits))?1:0);
+  const p=softmax(logits.map(x=>x/temperature));
+  const indices=p.map((_,i)=>i).sort((a,b)=>p[b]-p[a]);
+  let cumulative=0; const kept=new Set();
+  for(const i of indices){kept.add(i);cumulative+=p[i];if(cumulative>=topP)break;}
+  return p.map((v,i)=>kept.has(i)?v/cumulative:0);
+}
+// Toy scores intentionally isolate masking and normalization; use model activations for interpretability research.
+const attentionScores=[[1],[.3,1.2],[.1,.7,.2],[.1,1.2,.4,.8],[.1,1,.2,2.4,.3]];
+const toyValues=[[1,0],[0,1],[.5,.5],[2,1],[-1,1]];
+let query=4;
+const queryButtons=words.slice(0,5).map((w,i)=>{
+  const button=document.createElement('button');button.textContent=w;
+  button.addEventListener('click',()=>{query=i;renderAttention();});
+  $('query-buttons').append(button);return button;
+});
+function renderAttention(){
+  queryButtons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===query)));
+  const grid=$('attention-grid');grid.replaceChildren();
+  const cell=(content,cls,bg)=>{const e=document.createElement('span');e.textContent=content;e.className=cls;if(bg)e.style.background=bg;grid.append(e);};
+  cell('Q ↓ / K →','key');words.slice(0,5).forEach(w=>cell(w,'key'));
+  attentionScores.forEach((scores,row)=>{
+    cell(words[row],'qlabel'); const probs=softmax(scores);
+    for(let col=0;col<5;col++){
+      const masked=col>row,selected=row===query;
+      cell(masked?'—':Math.round(probs[col]*100)+'%', 'cell'+(masked?' masked':selected?' selected':''), !masked&&selected?'rgba(66,175,171,'+(.12+probs[col]*.8)+')':null);
+    }
+  });
+  const p=softmax(attentionScores[query]);
+  const out=[0,1].map(axis=>p.reduce((sum,v,i)=>sum+v*toyValues[i][axis],0));
+  text('attention-result','query = “'+words[query]+'”\nweights = ['+p.map(v=>v.toFixed(2)).join(', ')+']\nΣ weights = 1; weighted V = ['+out.map(v=>v.toFixed(2)).join(', ')+']');
+  grid.setAttribute('aria-label','Causal attention. Selected query '+words[query]+'. Allowed weights: '+p.map((v,i)=>words[i]+' '+Math.round(v*100)+' percent').join(', ')+'. Future positions are masked.');
+}
+renderAttention();
+const sampleWords=['Paris','Lyon','London','Rome','<eos>'];
+const logits=[2.5,1.2,.2,-.5,-1];
+let probabilities=[];
+function renderSampling(){
+  const t=Number($('temperature').value),top=Number($('top-p').value);
+  text('temp-value',t.toFixed(1));text('topp-value',top.toFixed(2));
+  probabilities=distribution(logits,t,top);
+  $('probabilities').replaceChildren(...sampleWords.map((w,i)=>{
+    const row=document.createElement('div');row.className='prob-row'+(probabilities[i]===0?' excluded':'');
+    const label=document.createElement('span');label.textContent=w;
+    const track=document.createElement('div');track.className='track';
+    const bar=document.createElement('div');bar.className='fill';bar.style.width=100*probabilities[i]+'%';track.append(bar);
+    const pct=document.createElement('span');pct.className='pct';pct.textContent=(100*probabilities[i]).toFixed(1)+'%';
+    row.append(label,track,pct);return row;
+  }));
+  text('sample-result',t===0?'Greedy: Paris every time.':'Distribution updated. Draw a token.');
+}
+$('temperature').addEventListener('input',renderSampling);$('top-p').addEventListener('input',renderSampling);
+$('sample').addEventListener('click',()=>{
+  let draw=Math.random(),selected=probabilities.findLastIndex(p=>p>0);
+  for(let i=0;i<probabilities.length;i++){draw-=probabilities[i];if(draw<0){selected=i;break;}}
+  text('sample-result','Selected: '+sampleWords[selected]);
+});
+renderSampling();
+
+const GiB=1024**3;
+function cost({batch,context,weightBits,kvBits,heads,bandwidth=2,compute=150}){
+  const weights=8e9*weightBits/8;
+  const kv=2*batch*context*32*heads*128*kvBits/8;
+  const flops=2*batch*8e9+4*batch*32*context*32*128;
+  const computeMs=flops/(compute*1e12)*1000;
+  const memoryMs=(weights+kv)/(bandwidth*1e12)*1000;
+  return {weights,kv,flops,computeMs,memoryMs,stepMs:Math.max(computeMs,memoryMs),fits:weights+kv<=80*GiB};
+}
+function hardwareInputs(){return {batch:2**Number($('batch').value),context:512*2**Number($('context').value),weightBits:Number($('weight-bits').value),kvBits:Number($('kv-bits').value),heads:Number($('kv-heads').value),bandwidth:Number($('bandwidth').value),compute:Number($('compute').value)};}
+function renderHardware(){
+  const p=hardwareInputs(),c=cost(p),total=(c.weights+c.kv)/GiB;
+  $('batch').setAttribute('aria-valuetext',p.batch+' requests');$('context').setAttribute('aria-valuetext',fmt(p.context)+' tokens per request');
+  text('batch-value',p.batch);text('context-value',fmt(p.context));text('bandwidth-value',p.bandwidth.toFixed(1));text('compute-value',p.compute);
+  text('weights-number',(c.weights/GiB).toFixed(1));text('kv-number',(c.kv/GiB).toFixed(1));text('step-number',c.fits?c.stepMs.toFixed(1):'—');
+  $('weights-meter').style.width=Math.min(100,c.weights/(80*GiB)*100)+'%';
+  $('kv-meter').style.width=Math.min(100,c.kv/(80*GiB)*100)+'%';
+  $('memory-meter').setAttribute('aria-label',total.toFixed(1)+' GiB payload out of 80 GiB capacity, '+(c.weights/GiB).toFixed(1)+' GiB weights and '+(c.kv/GiB).toFixed(1)+' GiB KV.');
+  text('capacity',c.fits?total.toFixed(1)+' / 80 GiB payload. Runtime buffers need extra space.':'Does not fit: '+total.toFixed(1)+' / 80 GiB before runtime buffers.');
+  $('capacity').style.color=c.fits?'var(--muted)':'var(--red)';
+  const max=Math.max(c.computeMs,c.memoryMs);
+  $('compute-bar').style.width=(c.computeMs/max*100)+'%';$('memory-bar').style.width=(c.memoryMs/max*100)+'%';
+  text('compute-time',c.computeMs.toFixed(2)+' ms');text('memory-time',c.memoryMs.toFixed(2)+' ms');
+  const memory=c.memoryMs>c.computeMs;
+  text('bottleneck',!c.fits?'Capacity blocks this batch.':memory?'This setting waits on memory.':'This setting waits on compute.');
+  text('roof-explanation',!c.fits?'The bars show theoretical work only; this payload cannot run on the assumed device. Reduce batch, context, or stored bytes, or distribute memory.':(memory?'The memory floor exceeds the arithmetic floor. More FLOP/s alone cannot remove that limit.':'Sharing weight reads across enough tokens makes arithmetic the larger floor.')+' One iteration emits '+p.batch+' token'+(p.batch===1?'':'s')+' across '+p.batch+' request'+(p.batch===1?'':'s')+'.');
+}
+['batch','context','weight-bits','kv-bits','kv-heads','bandwidth','compute'].forEach(id=>$(id).addEventListener('input',renderHardware));
+const presets={chat:[0,4,16,16,8],throughput:[7,0,16,16,8],long:[5,6,16,16,8]};
+document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{
+  const p=presets[b.dataset.preset];['batch','context','weight-bits','kv-bits','kv-heads'].forEach((id,i)=>$(id).value=p[i]);
+  $('bandwidth').value=2;$('compute').value=150;renderHardware();
+}));
+renderHardware();
+
+const requestLengths=[2,5,3,2,4];
+function schedule(continuous){
+  const lanes=[null,null],ticks=[];let next=0;
+  while(next<requestLengths.length||lanes.some(Boolean)){
+    if(continuous||lanes.every(x=>x===null)){
+      for(let lane=0;lane<2;lane++)if(lanes[lane]===null&&next<requestLengths.length){lanes[lane]={id:next,left:requestLengths[next]};next++;}
+    }
+    ticks.push(lanes.map(x=>x?x.id:null));
+    lanes.forEach((x,i)=>{if(x&&--x.left===0)lanes[i]=null;});
+  }
+  return ticks;
+}
+function renderSchedule(continuous){
+  $('static-batch').setAttribute('aria-pressed',String(!continuous));$('continuous-batch').setAttribute('aria-pressed',String(continuous));
+  const ticks=schedule(continuous),grid=$('timeline');grid.replaceChildren();
+  const add=(value,cls)=>{const e=document.createElement('span');e.textContent=value;e.className=cls;grid.append(e);};
+  add('step','tick');for(let i=1;i<=12;i++)add(i,'tick');
+  for(let lane=0;lane<2;lane++){add('slot '+(lane+1),'lane');for(let i=0;i<12;i++){
+    const id=i<ticks.length?ticks[i][lane]:null;
+    add(id===null?'·':String.fromCharCode(65+id),i>=ticks.length?'tick':id===null?'idle':String.fromCharCode(97+id));
+  }}
+  text('schedule-ticks',ticks.length+' steps');text('schedule-util',Math.round(16/(ticks.length*2)*100)+'% occupied slots');
+  text('schedule-copy',continuous?'C starts as soon as A finishes. Later, D and E fill both free slots. Same 16 useful token-steps; fewer empty slots.':'A finishes after step 2, but its slot waits for B. The next fixed batch must wait for the whole current batch.');
+  grid.setAttribute('aria-label',(continuous?'Continuous':'Static')+' batching: '+ticks.length+' steps, '+Math.round(16/(ticks.length*2)*100)+' percent occupied slots. A through E label requests; dots within the schedule are idle.');
+}
+$('static-batch').addEventListener('click',()=>renderSchedule(false));$('continuous-batch').addEventListener('click',()=>renderSchedule(true));renderSchedule(false);
+
+function renderSpeculation(){
+  const n=Number($('accepted').value);text('accepted-value',n+' of 4');
+  const tokens=['The','answer','is','42'];
+  $('spec-tokens').replaceChildren(...tokens.map((word,i)=>{
+    const e=document.createElement('div');e.className='spec-token '+(i<n?'accept':i===n?'reject':'discard');e.textContent=word;
+    const small=document.createElement('small');small.textContent=i<n?'accepted':i===n?'first rejection':'discarded';e.append(small);return e;
+  }));
+  const extra=document.createElement('div');extra.className='spec-token bonus';extra.textContent=n===4?'.':['An','result','was','43'][n];
+  const label=document.createElement('small');label.textContent=n===4?'bonus sample':'correction';extra.append(label);$('spec-tokens').append(extra);
+  text('spec-copy',(n+1)+' output token'+(n?'s':'')+' advanced: '+n+' accepted + 1 '+(n===4?'bonus token. All proposals were accepted.':'corrected token. The rejected token and everything after it are discarded.')+' One target verification pass, plus the cost of drafting.');
+}
+$('accepted').addEventListener('input',renderSpeculation);renderSpeculation();
+const quizAnswers=[
+  'KV grows with both context and batch. Weight memory is shared; request history usually is not.',
+  'False. Tiling reduces HBM traffic and intermediate storage; dense attention still has quadratic prefill arithmetic.',
+  'Yes. Acceptance plus the rejection correction preserves the target distribution; speedup is workload-dependent.'
+];
+document.querySelectorAll('.quiz').forEach((quiz,i)=>quiz.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>{
+  quiz.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+  const correct=button.dataset.choice===quiz.dataset.answer;
+  quiz.querySelector('.answer').textContent=(correct?'Correct. ':'Revisit this one. ')+quizAnswers[i];
+})));
+
+// Runnable check: open this HTML and evaluate runSelfChecks() in the browser console.
+window.runSelfChecks=function(){
+  let checks=0;
+  const assert=(ok,label)=>{if(!ok)throw new Error(label);checks++;};
+  const close=(a,b)=>Math.abs(a-b)<1e-8;
+  for(const t of [0,.1,1,2])for(const p of [.1,.5,.95,1]){
+    const d=distribution(logits,t,p);assert(close(d.reduce((a,b)=>a+b),1),'Sampling normalizes');assert(d.every(x=>Number.isFinite(x)&&x>=0),'Sampling stays valid');
+  }
+  assert(distribution(logits,0,1)[0]===1,'T=0 uses argmax');
+  assert(distribution([0,0],1,.5).filter(x=>x>0).length===1,'Top-p keeps smallest sufficient prefix');
+  assert(softmax([10000,10000]).every(x=>x===.5),'Softmax is stable for large logits');
+  attentionScores.forEach((s,i)=>{assert(s.length===i+1,'Causal masking excludes future keys');assert(close(softmax(s).reduce((a,b)=>a+b),1),'Attention normalizes');});
+  const c=cost({batch:32,context:8192,weightBits:16,kvBits:16,heads:8});
+  assert(c.kv===32*GiB,'Worked KV example is 32 GiB');assert(c.weights===16e9,'BF16 weight bytes');
+  const mha=cost({batch:1,context:8192,weightBits:16,kvBits:16,heads:32});assert(mha.kv===4*GiB,'MHA KV is 4 GiB');
+  const mqa=cost({batch:1,context:8192,weightBits:4,kvBits:16,heads:1});assert(mqa.kv===GiB/8,'MQA KV is 128 MiB');assert(mqa.weights===4e9,'4-bit weight payload');
+  assert(cost({batch:32,context:32768,weightBits:16,kvBits:16,heads:8}).fits===false,'Over-capacity detected');
+  const busy=cost({batch:128,context:512,weightBits:16,kvBits:16,heads:8});assert(busy.computeMs>busy.memoryMs&&busy.fits,'Short-context batched preset reaches compute regime');
+  for(const continuous of [false,true]){
+    const ticks=schedule(continuous);assert(ticks.length===(continuous?9:12),'Scheduler finish time');
+    requestLengths.forEach((n,i)=>assert(ticks.flat().filter(id=>id===i).length===n,'Every request runs exactly its required tokens'));
+  }
+  assert(!document.querySelector('script[src],link[rel=stylesheet],img[src^=http]'),'Artifact is self-contained');
+  return {passed:checks,message:'Sampling, masking, memory math, regimes, schedules, and self-contained assets verified.'};
+};
+</script>
+</main>
+</body>
+</html>

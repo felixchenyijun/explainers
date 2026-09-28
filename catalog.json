@@ -1,0 +1,11 @@
+[
+  {"slug":"jagged-frontier","title":"The jagged AI frontier","category":"AI systems","description":"One connected graph across models, chips, energy, data centers, economics and deployment. Follow the constraints that make progress uneven.","format":"48 topics · 77 connections","note":"Research snapshot: September 24, 2026"},
+  {"slug":"inference-studio","title":"Inside inference","category":"AI systems","description":"Fifteen animated lessons: tokens, prefill and decoding through batching, parallelism, inference engines and the data center.","format":"3D interactive lessons","secondary":{"href":"inference-studio/watch.html","label":"Captioned video series"}},
+  {"slug":"gpu-tpu","title":"GPUs & TPUs","category":"Hardware","description":"An interactive architecture atlas: how accelerators move data, multiply matrices and turn silicon into useful throughput.","format":"Architecture atlas"},
+  {"slug":"physical-ai","title":"Physical AI","category":"AI systems","description":"From motion to silicon: world models, control loops and on-device inference meet the constraints of the physical world.","format":"Interactive simulations"},
+  {"slug":"llm-inference-lab","title":"LLM inference, one token at a time","category":"AI systems","description":"Explore the mechanics and tradeoffs behind serving a language model, from memory traffic to generation speed.","format":"Interactive lab"},
+  {"slug":"operating-systems","title":"OS under glass","category":"Computer science","description":"One explorable machine connects processes, virtual memory, scheduling, files, networking and boot.","format":"12 component drilldowns"},
+  {"slug":"kubernetes","title":"Kubernetes","category":"Computer science","description":"Explore how a cluster turns a desired state into running workloads, and what happens when the real world diverges.","format":"Interactive explainer"},
+  {"slug":"lean","title":"How Lean checks a proof","category":"Mathematics","description":"Follow a mathematical claim from proof steps to a small trusted kernel, with worked examples and numerical experiments.","format":"Proof walkthroughs"},
+  {"slug":"selfish-gene","title":"The Selfish Gene","category":"Biology","description":"Revisit the logic of gene-centered evolution and the examples that connect cooperation, kinship and natural selection.","format":"Visual argument map"}
+]

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+unset GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN GITHUB_ENTERPRISE_TOKEN
+export GH_CONFIG_DIR="$HOME/.config/gh-felixchenyijun"
+login=$(gh api user --jq .login)
+if [ "$login" != "felixchenyijun" ]; then
+  printf '%s\n' "Refusing GitHub operation: authenticated account is $login, expected felixchenyijun." >&2
+  exit 1
+fi
+exec gh "$@"
