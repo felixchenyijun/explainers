@@ -62,6 +62,17 @@ const Models = (() => {
     }
     return {rows,publicEvidence,allClues:signals.reduce((a,b)=>a+b,0),publicRed:1/(1+Math.pow(2,-publicEvidence))};
   }
-  return {clamp,rng,robot,traffic,serve,cafe,profiles,voting,fish,cascade};
+  function simpson({aEasy=90,aHard=60,bEasy=80,bHard=50,mixA=20,mixB=80}={}){
+    const shop=(easy,hard,mix)=>{
+      easy=clamp(Number(easy),0,100);hard=clamp(Number(hard),0,100);mix=clamp(Number(mix),0,100);
+      const groups=[{kind:'easy',n:mix,rate:easy,success:mix*easy/100},{kind:'hard',n:100-mix,rate:hard,success:(100-mix)*hard/100}];
+      return {groups,total:100,success:groups.reduce((s,g)=>s+g.success,0)};
+    };
+    const a=shop(aEasy,aHard,mixA),b=shop(bEasy,bHard,mixB),gap=a.success-b.success;
+    const within=[a.groups[0].rate-b.groups[0].rate,a.groups[1].rate-b.groups[1].rate];
+    const reversal=(within.every(x=>x>0)&&gap<0)||(within.every(x=>x<0)&&gap>0);
+    return {a,b,gap,within,reversal};
+  }
+  return {clamp,rng,robot,traffic,serve,cafe,profiles,voting,fish,cascade,simpson};
 })();
 if(typeof module!=='undefined')module.exports=Models;

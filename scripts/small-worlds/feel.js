@@ -29,7 +29,7 @@ const Sound={
   if(context===this.lastScene&&this.lastObserved){const old=this.lastObserved;if(cafe&&now.tick>old.tick){if(now.served>old.served)this.play('cup');else if(now.arrived>old.arrived)this.play('arrival');}else if(now.tick>old.tick){if(pip&&pip.dataset.sound!=='wait')this.play(pip.dataset.sound);else if(G.slug==='last-fish')this.play('water');else if(G.slug==='everyone-says')this.play('clue');}}
   this.lastScene=context;this.lastObserved=now;
  },
- action(action){if(['choose','mode','order','share','signal','catch','staff','protect'].includes(action))this.play(G.slug==='who-won'?'ballot':G.slug==='shortcut-city'?'road':G.slug==='last-fish'?'water':G.slug==='everyone-says'?'clue':'tap');}
+ action(action){if(['choose','mode','order','share','signal','catch','staff','protect','inspect','swap','common','causal-answer','life-case','life-answer','adoption'].includes(action))this.play(G.slug==='who-won'?'ballot':G.slug==='shortcut-city'?'road':G.slug==='last-fish'?'water':G.slug==='everyone-says'?'clue':'tap');}
 };
 Sound.enabled=Sound.read();
 const Motion={context:null,

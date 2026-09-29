@@ -17,7 +17,7 @@ function render(moveFocus=false){
  document.getElementById('motion').setAttribute('aria-pressed',String(!S.calm));
  document.getElementById('back').hidden=S.sandbox||S.chapter===0;
  document.getElementById('restart-chapter').textContent=S.sandbox?'Reset sandbox':'Restart chapter';
- document.getElementById('restart-chapter').hidden=!S.sandbox&&S.chapter===G.chapters.length-1;
+ document.getElementById('restart-chapter').hidden=!S.sandbox&&S.chapter===G.chapters.length-1&&!G.finalInteractive;
  if(moveFocus){document.getElementById('scene-title').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}else if(focus){document.getElementById(focus)?.focus({preventScroll:true});}
  Sound.update();Motion.after(motion);save();
 }

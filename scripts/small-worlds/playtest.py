@@ -93,9 +93,16 @@ def flow(slug):
   click('ask-choices');click('share','1');shot(slug);next_(slug,3)
   click('order','blue');click('communication','clues');click('order','red');next_(slug,4)
   click('trace-sources');click('source-answer','tie');click('source-case','1');click('source-answer','red');next_(slug,5)
+ elif slug=='average-that-lied':
+  click('choose','sol');next_(slug,0)
+  click('inspect','easy');click('inspect','hard');next_(slug,1)
+  click('swap','10');click('swap','10');shot(slug);next_(slug,2)
+  click('common','20');click('common','80');next_(slug,3)
+  click('causal-answer','group');click('case','after');click('causal-answer','total');next_(slug,4)
+  click('choose','down');next_(slug,5)
  finish(slug)
 if __name__=='__main__':
- slugs=sys.argv[1:] or ['good-robot','shortcut-city','little-cafe','who-won','last-fish','everyone-says']
+ slugs=sys.argv[1:] or ['good-robot','shortcut-city','little-cafe','who-won','last-fish','everyone-says','average-that-lied']
  try:
   for slug in slugs:flow(slug)
   (OUT/f'flows-{WIDTH}.json').write_text(json.dumps(reports,indent=2))

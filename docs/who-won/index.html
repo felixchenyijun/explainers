@@ -17,7 +17,8 @@
 .restart-actions{display:flex;align-items:center;gap:16px}.foot{flex-wrap:wrap}.restart-actions .textbtn:first-child{color:var(--ink)}@media(max-width:650px){.foot{gap:8px 15px}.restart-actions{gap:14px;margin-left:auto}}
 
 .restart-dialog{width:min(480px,calc(100vw - 32px));max-height:calc(100svh - 40px);padding:28px;border:1.5px solid var(--ink);border-radius:12px 16px 11px 14px;background:var(--paper);color:var(--ink);box-shadow:0 18px 80px #10241f40}.restart-dialog::backdrop{background:#15282080}.restart-dialog h2{font:30px/1.15 var(--serif);letter-spacing:-.03em;margin:0 0 15px}.restart-dialog p{font-size:14px;line-height:1.6}.restart-dialog-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:23px}@media(max-width:650px){.restart-dialog{padding:23px}.restart-dialog-actions .btn{flex:1;padding:12px 10px}}
-</style></head><body><a class="skip" href="#app">Skip to the game</a><header class="mast"><a class="brand" href="../small-worlds/">small <span>worlds</span></a><div class="mast-right"><span class="volume">VOTING & FAIRNESS</span><button class="textbtn sound-toggle" data-do="sound" id="sound" aria-pressed="false">♩ Sound off</button><button class="textbtn" data-do="motion" id="motion" aria-pressed="true">Motion on</button><button class="textbtn" data-do="lab" id="mode">Sandbox</button></div></header><main id="app"></main><noscript><p>This game needs JavaScript to run its simulations. All code is included in this page; no sign-in or network connection is required after loading.</p></noscript><footer class="foot"><button class="textbtn" data-do="back" id="back">← Previous chapter</button><a href="../small-worlds/">All six worlds</a><div class="restart-actions"><button class="textbtn" data-do="restart-chapter" id="restart-chapter">Restart chapter</button><button class="textbtn" data-do="restart">Restart story</button></div></footer><dialog id="reset-confirm" class="restart-dialog" aria-labelledby="reset-title" aria-describedby="reset-description"><h2 id="reset-title">Start this story over?</h2><p id="reset-description">Return to chapter 1 of <strong>Who Actually Won?</strong> and clear its saved answers and sandbox. Your other stories and sound/motion settings stay as they are.</p><div class="restart-dialog-actions"><button class="btn secondary" data-do="cancel-reset" autofocus>Keep playing</button><button class="btn" data-do="confirm-reset">Start over</button></div></dialog><script>/* Original, deterministic teaching models. No external dependencies. */
+.driver-experiment{max-width:710px;margin:27px auto;border-top:1px solid var(--line);padding-top:23px}.driver-experiment h2{font:27px/1.3 var(--serif);margin:0 0 12px}.driver-experiment p{font-size:14px;line-height:1.7}.driver-experiment .controls{grid-template-columns:1fr;margin:17px 0}.driver-options{display:grid;grid-template-columns:1fr 1fr;gap:17px;margin:20px 0}.driver-options>div{padding:14px 17px;border:1px solid #b9c2b1;border-radius:6px}.driver-options .better{background:#e5ecdF;border-color:#627f66}.driver-options span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.driver-options strong{font:24px var(--serif)}.driver-experiment .driver-gain{font:22px/1.4 var(--serif);color:#28533e}.driver-experiment .note{font-size:12px;text-align:left}@media(max-width:650px){.driver-options{grid-template-columns:1fr;gap:10px}.driver-options strong{font-size:24px}.driver-experiment h2{font-size:25px}}
+</style></head><body><a class="skip" href="#app">Skip to the game</a><header class="mast"><a class="brand" href="../small-worlds/">small <span>worlds</span></a><div class="mast-right"><span class="volume">VOTING & FAIRNESS</span><button class="textbtn sound-toggle" data-do="sound" id="sound" aria-pressed="false">♩ Sound off</button><button class="textbtn" data-do="motion" id="motion" aria-pressed="true">Motion on</button><button class="textbtn" data-do="lab" id="mode">Sandbox</button></div></header><main id="app"></main><noscript><p>This game needs JavaScript to run its simulations. All code is included in this page; no sign-in or network connection is required after loading.</p></noscript><footer class="foot"><button class="textbtn" data-do="back" id="back">← Previous chapter</button><a href="../small-worlds/">All seven worlds</a><div class="restart-actions"><button class="textbtn" data-do="restart-chapter" id="restart-chapter">Restart chapter</button><button class="textbtn" data-do="restart">Restart story</button></div></footer><dialog id="reset-confirm" class="restart-dialog" aria-labelledby="reset-title" aria-describedby="reset-description"><h2 id="reset-title">Start this story over?</h2><p id="reset-description">Return to chapter 1 of <strong>Who Actually Won?</strong> and clear its saved answers and sandbox. Your other stories and sound/motion settings stay as they are.</p><div class="restart-dialog-actions"><button class="btn secondary" data-do="cancel-reset" autofocus>Keep playing</button><button class="btn" data-do="confirm-reset">Start over</button></div></dialog><script>/* Original, deterministic teaching models. No external dependencies. */
 const Models = (() => {
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
   const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};
@@ -81,7 +82,18 @@ const Models = (() => {
     }
     return {rows,publicEvidence,allClues:signals.reduce((a,b)=>a+b,0),publicRed:1/(1+Math.pow(2,-publicEvidence))};
   }
-  return {clamp,rng,robot,traffic,serve,cafe,profiles,voting,fish,cascade};
+  function simpson({aEasy=90,aHard=60,bEasy=80,bHard=50,mixA=20,mixB=80}={}){
+    const shop=(easy,hard,mix)=>{
+      easy=clamp(Number(easy),0,100);hard=clamp(Number(hard),0,100);mix=clamp(Number(mix),0,100);
+      const groups=[{kind:'easy',n:mix,rate:easy,success:mix*easy/100},{kind:'hard',n:100-mix,rate:hard,success:(100-mix)*hard/100}];
+      return {groups,total:100,success:groups.reduce((s,g)=>s+g.success,0)};
+    };
+    const a=shop(aEasy,aHard,mixA),b=shop(bEasy,bHard,mixB),gap=a.success-b.success;
+    const within=[a.groups[0].rate-b.groups[0].rate,a.groups[1].rate-b.groups[1].rate];
+    const reversal=(within.every(x=>x>0)&&gap<0)||(within.every(x=>x<0)&&gap>0);
+    return {a,b,gap,within,reversal};
+  }
+  return {clamp,rng,robot,traffic,serve,cafe,profiles,voting,fish,cascade,simpson};
 })();
 if(typeof module!=='undefined')module.exports=Models;
 
@@ -183,7 +195,7 @@ const Sound={
   if(context===this.lastScene&&this.lastObserved){const old=this.lastObserved;if(cafe&&now.tick>old.tick){if(now.served>old.served)this.play('cup');else if(now.arrived>old.arrived)this.play('arrival');}else if(now.tick>old.tick){if(pip&&pip.dataset.sound!=='wait')this.play(pip.dataset.sound);else if(G.slug==='last-fish')this.play('water');else if(G.slug==='everyone-says')this.play('clue');}}
   this.lastScene=context;this.lastObserved=now;
  },
- action(action){if(['choose','mode','order','share','signal','catch','staff','protect'].includes(action))this.play(G.slug==='who-won'?'ballot':G.slug==='shortcut-city'?'road':G.slug==='last-fish'?'water':G.slug==='everyone-says'?'clue':'tap');}
+ action(action){if(['choose','mode','order','share','signal','catch','staff','protect','inspect','swap','common','causal-answer','life-case','life-answer','adoption'].includes(action))this.play(G.slug==='who-won'?'ballot':G.slug==='shortcut-city'?'road':G.slug==='last-fish'?'water':G.slug==='everyone-says'?'clue':'tap');}
 };
 Sound.enabled=Sound.read();
 const Motion={context:null,
@@ -227,7 +239,7 @@ function render(moveFocus=false){
  document.getElementById('motion').setAttribute('aria-pressed',String(!S.calm));
  document.getElementById('back').hidden=S.sandbox||S.chapter===0;
  document.getElementById('restart-chapter').textContent=S.sandbox?'Reset sandbox':'Restart chapter';
- document.getElementById('restart-chapter').hidden=!S.sandbox&&S.chapter===G.chapters.length-1;
+ document.getElementById('restart-chapter').hidden=!S.sandbox&&S.chapter===G.chapters.length-1&&!G.finalInteractive;
  if(moveFocus){document.getElementById('scene-title').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}else if(focus){document.getElementById(focus)?.focus({preventScroll:true});}
  Sound.update();Motion.after(motion);save();
 }

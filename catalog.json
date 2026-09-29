@@ -1,5 +1,13 @@
 [
   {
+    "slug": "solar-system",
+    "title": "Solar Atlas — Space, at its actual scale",
+    "category": "Astronomy",
+    "description": "Fly between worlds in a Three.js solar system with true physical sizes and distances, 460 cataloged moons, 39,032 small bodies, orbit lines, saved checkpoints and reversible time.",
+    "format": "True-scale 3D · JPL Horizons · IAU rotation",
+    "note": "2026 trajectories; coverage and approximation limits documented in the atlas."
+  },
+  {
     "slug": "groundwork",
     "title": "Groundwork — From Ground to Home",
     "category": "Engineering",
@@ -33,22 +41,8 @@
     "slug": "small-worlds",
     "title": "Small Worlds",
     "category": "Playable stories",
-    "description": "Six little games about a complicated world. Make a choice, watch what happens, then change the rules and try again.",
-    "format": "6 games · stories + sandboxes"
-  },
-  {
-    "slug": "good-robot",
-    "title": "Good Robot, Bad Instructions",
-    "category": "Playable stories",
-    "description": "An eager little robot. A reasonable reward. A very unreasonable result.",
-    "format": "AI & incentives"
-  },
-  {
-    "slug": "shortcut-city",
-    "title": "The Shortcut That Broke the City",
-    "category": "Playable stories",
-    "description": "A new road should make the morning commute easier. Right?",
-    "format": "Networks & game theory"
+    "description": "Seven little games about a complicated world. Make a choice, watch what happens, then change the rules and try again.",
+    "format": "7 games · stories + sandboxes"
   },
   {
     "slug": "little-cafe",
@@ -56,6 +50,27 @@
     "category": "Playable stories",
     "description": "Run a tiny café. Make every minute count. See who ends up waiting.",
     "format": "Queues & uncertainty"
+  },
+  {
+    "slug": "shortcut-city",
+    "title": "The Shortcut That Broke the City",
+    "category": "Playable stories",
+    "description": "Every driver takes the faster option. Everyone gets a slower commute.",
+    "format": "Networks & game theory"
+  },
+  {
+    "slug": "everyone-says",
+    "title": "Everyone Says It’s True",
+    "category": "Playable stories",
+    "description": "Eight confident people. Trace their evidence, then try the lesson in everyday life.",
+    "format": "Evidence & social learning"
+  },
+  {
+    "slug": "good-robot",
+    "title": "Good Robot, Bad Instructions",
+    "category": "Playable stories",
+    "description": "An eager little robot. A reasonable reward. A very unreasonable result.",
+    "format": "AI & incentives"
   },
   {
     "slug": "who-won",
@@ -72,11 +87,11 @@
     "format": "Cooperation & the commons"
   },
   {
-    "slug": "everyone-says",
-    "title": "Everyone Says It’s True",
+    "slug": "average-that-lied",
+    "title": "The Average That Lied",
     "category": "Playable stories",
-    "description": "Eight confident people. Open their envelopes before you believe them.",
-    "format": "Evidence & social learning"
+    "description": "Two repair shops. One misleading leaderboard. Change the mix and discover Simpson’s paradox.",
+    "format": "Statistics & fair comparisons"
   },
   {
     "slug": "jagged-frontier",

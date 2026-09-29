@@ -1,12 +1,12 @@
 const G={
- slug:'everyone-says',title:'Everyone Says It’s True',theme:'A game about the evidence inside a crowd',
+ slug:'everyone-says',finalInteractive:true,title:'Everyone Says It’s True',theme:'A game about the evidence inside a crowd',
  chapters:['Your private clue','The crowd before you','How sure is the crowd?','Ask a better question','Repair the conversation','Trace the sources','Take it with you'],
  initialLab:{signals:[1,1,-1,-1,-1,-1,-1,-1],share:0,tick:8},
  model:'There are two equally likely jars. A clue matches the jar with probability 2/3; clues are independent across people conditional on the jar. Everyone knows the model and maximizes their probability of being correct, following their own clue at exact posterior ties. Before a cascade, choices reveal clues; after public log₂ odds reach ±2, both possible clues lead to the same choice. Later choices then add no information. Opening envelopes after decisions reveals evidence without rewriting those decisions. Replaying with clues shared changes the information available at each decision. The story deliberately starts with a misleading clue order; it is not a measurement of real-world error rates. The source-tracing challenge assumes known, equally reliable, conditionally independent original sources; copied posts contain no additional clue.',
- sources:[['Classroom Games: Information Cascades — Anderson & Holt','https://www.aeaweb.org/articles?id=10.1257/jep.10.4.187'],['Information Cascades and Social Learning — Bikhchandani, Hirshleifer, Tamuz & Welch','https://www.aeaweb.org/articles?id=10.1257/jel.20241472'],['Distinguishing informational cascades from herd behavior — Çelen & Kariv','https://www.aeaweb.org/articles?id=10.1257/0002828041464461']],
+ sources:[['How social influence can undermine the wisdom of crowd effect — Lorenz et al. (2011)','https://www.sg.ethz.ch/publications/2011/lorenz2011how-social-influence/PNAS-2011-Lorenz-9020-5.pdf'],['Classroom Games: Information Cascades — Anderson & Holt','https://www.aeaweb.org/articles?id=10.1257/jep.10.4.187'],['Information Cascades and Social Learning — Bikhchandani, Hirshleifer, Tamuz & Welch','https://www.aeaweb.org/articles?id=10.1257/jel.20241472'],['Distinguishing informational cascades from herd behavior — Çelen & Kariv','https://www.aeaweb.org/articles?id=10.1257/0002828041464461']],
  render(){
   const d=data(),c=S.chapter;
-  if(!S.sandbox&&c===6)return U.completion('Ask what they saw. Not just what they chose.','You watched reasonable people make a confident crowd, changed a hidden clue without changing a single public choice, and traced repeated claims back to their sources.','Before counting agreement: trace the sources, check their independence, and ask what evidence would change your mind.');
+  if(!S.sandbox&&c===6)return RumorLife.render(d);
   if(!S.sandbox&&c===5)return this.sourceLesson(d);
   const original=[1,1,-1,-1,-1,-1,-1,-1];
   const signals=S.sandbox?d.signals:c===4&&d.order==='blue'?[-1,-1,1,1,-1,-1,-1,-1]:[...original];
@@ -83,6 +83,7 @@ const G={
  odds(k){return k>=0?`${2**k}:1 red`:`${2**(-k)}:1 blue`;},
  act(a,v){
   const d=data();
+  if(a.startsWith('life-')){RumorLife.act(a,v,d);return;}
   if(a==='math'){stop();d.mathOpen=!d.mathOpen;}
   if(a==='math-proof'){stop();d.proofOpen=!d.proofOpen;}
   if(a==='math-person'){stop();d.mathPerson=Number(v);}

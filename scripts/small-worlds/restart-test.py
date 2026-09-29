@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Verify visible, keyboard-accessible, isolated story resets in all six games."""
+"""Verify visible, keyboard-accessible, isolated story resets in all seven games."""
 import json, os, subprocess, time
 from pathlib import Path
 SESSION=os.environ.get('SW_SESSION','sw-restart-dialog')
 BASE=os.environ.get('SW_BASE','http://127.0.0.1:8784')
 OUT=Path(os.environ.get('SW_OUTPUT','/tmp/sw-rumor-math/restart'));OUT.mkdir(parents=True,exist_ok=True)
-SLUGS=['good-robot','shortcut-city','little-cafe','who-won','last-fish','everyone-says']
+SLUGS=['good-robot','shortcut-city','little-cafe','who-won','last-fish','everyone-says','average-that-lied']
 def run(*args):
     p=subprocess.run(['agent-browser','--session',SESSION,'--args','--mute-audio','--json',*map(str,args)],capture_output=True,text=True,timeout=40)
     if p.returncode:raise RuntimeError(p.stdout+p.stderr)

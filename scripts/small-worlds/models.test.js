@@ -72,4 +72,36 @@ test('The exact eight-red-choice likelihood is 4/9 versus 1/9; private evidence 
   near(original.publicRed,flipped.publicRed);
   near(M.cascade(undefined,true).publicRed,4/(4+64));
 });
+test('The shortcut is individually beneficial throughout adoption, despite the worse final average',()=>{
+  for(let x=0;x<=4000;x+=500){const r=M.traffic({share:x/4000});near(r.outer-r.cross,25-x/200);assert.ok(r.cross<r.outer);}
+  const first=M.traffic({share:0}),last=M.traffic({share:1});near(first.cross,40);near(first.outer,65);near(last.cross,80);near(last.outer,85);
+});
+test('Simpson example preserves counts and reverses both within-group advantages',()=>{
+ const r=M.simpson();assert.equal(r.a.success,66);assert.equal(r.b.success,74);assert.deepEqual(r.within,[10,10]);assert.equal(r.reversal,true);
+ assert.deepEqual(r.a.groups.map(g=>[g.n,g.success]),[[20,18],[80,48]]);assert.deepEqual(r.b.groups.map(g=>[g.n,g.success]),[[80,64],[20,10]]);
+});
+test('Exchanging work conserves the city mix and flips the ranking without changing group rates',()=>{
+ for(let n=10;n<=90;n+=10){const r=M.simpson({mixA:n,mixB:100-n});near(r.a.groups[0].n+r.b.groups[0].n,100);near(r.a.groups[1].n+r.b.groups[1].n,100);near(r.a.success,60+.3*n);near(r.b.success,80-.3*n);assert.deepEqual(r.within,[10,10]);}
+ assert.equal(M.simpson({mixA:30,mixB:70}).reversal,true);assert.equal(M.simpson({mixA:40,mixB:60}).reversal,false);
+});
+test('A common mixture cannot reverse strict dominance within both groups',()=>{
+ for(let ae=20;ae<=100;ae+=20)for(let ah=20;ah<=100;ah+=20)for(let w=0;w<=100;w+=5){
+  const r=M.simpson({aEasy:ae,aHard:ah,bEasy:ae-20,bHard:ah-20,mixA:w,mixB:w});near(r.gap,20);assert.equal(r.reversal,false);
+ }
+});
+test('Simpson detector handles reverse dominance, ties, crossed groups, and extreme rates',()=>{
+ const reversed=M.simpson({aEasy:80,aHard:50,bEasy:90,bHard:60,mixA:80,mixB:20});assert.equal(reversed.reversal,true);assert.ok(reversed.gap>0);
+ assert.equal(M.simpson({aEasy:50,aHard:50,bEasy:50,bHard:50}).reversal,false);
+ assert.equal(M.simpson({aEasy:90,aHard:40,bEasy:80,bHard:60}).reversal,false);
+ const extremes=M.simpson({aEasy:100,aHard:0,bEasy:0,bHard:100,mixA:20,mixB:80});near(extremes.a.success,20);near(extremes.b.success,20);assert.equal(extremes.reversal,false);
+});
+test('Every supported ticket grid has exactly 100 jobs and integer successful counts',()=>{
+ for(let e=0;e<=100;e+=10)for(let h=0;h<=100;h+=10)for(let n=10;n<=90;n+=10){
+  const s=M.simpson({aEasy:e,aHard:h,mixA:n}).a;assert.equal(s.groups.reduce((a,g)=>a+g.n,0),100);assert.ok(s.success>=0&&s.success<=100);for(const g of s.groups)assert.ok(Number.isInteger(g.success));
+ }
+});
+test('Improving both support rates can lower the overall rate when the case mix shifts',()=>{
+ const old=M.simpson({aEasy:80,aHard:40,mixA:80}).a,now=M.simpson({aEasy:90,aHard:50,mixA:20}).a;near(old.success,72);near(now.success,58);
+ near(M.simpson({aEasy:80,aHard:40,mixA:50}).a.success,60);near(M.simpson({aEasy:90,aHard:50,mixA:50}).a.success,70);
+});
 console.log(`${count} mathematical checks passed.`);

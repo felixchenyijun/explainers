@@ -1,6 +1,6 @@
 # Small Worlds
 
-Six original playable explanations, inspired by the predict/play/revise structure of Nicky Case's *The Evolution of Trust*. All art is original inline SVG. Each generated page is standalone and makes no runtime network requests.
+Seven original playable explanations, inspired by the predict/play/revise structure of Nicky Case's *The Evolution of Trust*. All art is original inline SVG. Each generated page is standalone and makes no runtime network requests.
 
 Build: `python3 scripts/small-worlds/build.py`
 
@@ -12,7 +12,7 @@ The models are educational idealizations. Model assumptions and primary sources 
 
 Browser validation (start `python3 -m http.server 8765 --bind 127.0.0.1 --directory docs` first):
 
-- `python3 scripts/small-worlds/playtest.py`: all 42 story scenes, completion, saved progress, sandbox entry/return, unique DOM IDs, and overflow.
+- `python3 scripts/small-worlds/playtest.py`: all 49 story scenes, completion, saved progress, sandbox entry/return, unique DOM IDs, and overflow.
 - `SW_WIDTH=390 SW_SESSION=small-worlds-mobile python3 scripts/small-worlds/playtest.py`: the same full flows on a narrow viewport.
 - `SW_ALTERNATE=1 SW_SESSION=small-worlds-alternate python3 scripts/small-worlds/playtest.py`: alternate predictions and incorrect transfer answers.
 - `SW_SESSION=small-worlds-sandbox python3 scripts/small-worlds/sandbox-test.py`: controls, edge cases, counterexamples, WCAG A/AA automated checks, and external runtime request checks.
@@ -33,4 +33,16 @@ The social-learning game includes an optional mathematical walkthrough after pre
 
 The social-learning story asks for a confidence prediction before showing the public posterior, lets the learner change person 3's private clue while keeping the public choices fixed, distinguishes opening envelopes afterward from replaying with clue sharing, and tests both speaking orders. Its transfer challenge compares identical counts of copied versus independent reports. Both cases require a fresh prediction, including a case where independent agreement is strong evidence.
 
-Whole-story restart uses a native modal dialog with keyboard focus and Escape/cancel support. It pauses playback and preserves sound/motion preferences. `SW_BASE=http://127.0.0.1:8765 python3 scripts/small-worlds/restart-test.py` checks confirmation visibility, cancellation, persistence, and isolation across all six stories on desktop and phone.
+Whole-story restart uses a native modal dialog with keyboard focus and Escape/cancel support. It pauses playback and preserves sound/motion preferences. `SW_BASE=http://127.0.0.1:8765 python3 scripts/small-worlds/restart-test.py` checks confirmation visibility, cancellation, persistence, and isolation across all seven stories on desktop and phone.
+
+
+The collection order is café, shortcut, social learning, robot, voting, commons, then the new Simpson’s paradox story. Catalog metadata and generated collection order match.
+
+**The Average That Lied** uses an invented two-shop repair ledger. A 90%/60% shop receives 20 easy and 80 difficult jobs; an 80%/50% shop receives the reverse mix. Their overall rates are 66% and 74%. Players inspect both strata, exchange work while preserving the city’s job totals, standardize to common weights, distinguish a prior confounder from a pathway caused by an intervention, and solve a new support-ticket example. Rates and job counts change in increments that keep every drawn ticket exact. The sandbox detects reversals in either direction and explains ties or mixed within-group rankings.
+
+The final social-learning chapter now includes three fictional applications (repeated headlines, borrowed product recommendations, and a meeting anchored by an early speaker), specific pitfalls, practical habits, and useful sentences. No game posterior is claimed to be a real-world probability. Existing saved chapter indexes remain compatible.
+
+Shortcut chapter 3 includes a personal-route comparison at different adoption levels. The two alternatives use the same frozen traffic allocation: initially 40 versus 65 minutes, finally 80 versus 85 minutes. This explains why individually beneficial switching can worsen the final system outcome. Intermediate allocations are explicitly not equilibria.
+
+
+`SW_BASE=http://127.0.0.1:8786 node scripts/small-worlds/parallels-test.cjs` traverses all seven stories on desktop and the three changed stories on phone, including wrong predictions, the new source applications, arithmetic/control assertions, accessibility audits, sandbox controls, saved progress and resets. It requires a local Playwright runtime with Chrome and axe-core; `SW_PLAYWRIGHT` may point to its module and `SW_AXE` to its `axe.min.js`. Screenshots and JSON results go under `SW_OUTPUT` (default `/tmp/sw-parallels/qa`), outside published files.
