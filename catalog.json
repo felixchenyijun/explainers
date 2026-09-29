@@ -1,5 +1,12 @@
 [
   {
+    "slug": "the-news-that-survived",
+    "title": "The news that survived",
+    "category": "History & archives",
+    "description": "Read a real Omaha newspaper, compare its printed words with machine OCR, and see how page filters and title changes decide which voices a search can find.",
+    "format": "Page reader · 432-page search · 93-title archive"
+  },
+  {
     "slug": "how-science-travels",
     "title": "How an idea travels through science",
     "category": "Science & evidence",
