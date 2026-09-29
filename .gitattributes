@@ -6,3 +6,5 @@
 *.mp4 binary
 *.jpg binary
 *.zip binary
+# Keep the pinned upstream copy byte-for-byte, including its original whitespace.
+scripts/small-worlds/vendor/nutshell-1.0.8.js whitespace=-blank-at-eol
