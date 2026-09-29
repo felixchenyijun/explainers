@@ -43,7 +43,8 @@ def next_(slug,c):check(slug,c);click('next')
 def shot(slug):run('scroll','up',5000);run('screenshot',str(OUT/(slug+f'-{WIDTH}.png')))
 def start(slug):
  run('open',BASE+'/'+slug+'/');run('set','viewport',WIDTH,1000 if WIDTH>650 else 844)
- click('restart');click('confirm-reset');run('click','#motion')
+ click('restart');click('confirm-reset')
+ if not evaluate('SmallWorlds.getState().calm'):run('click','#motion')
 def finish(slug):
  check(slug,6);assert evaluate('SmallWorlds.getState().completed')
  click('lab');assert evaluate('SmallWorlds.getState().sandbox')
@@ -88,10 +89,10 @@ def flow(slug):
  elif slug=='everyone-says':
   click('choose','blue');next_(slug,0)
   click('choose','blue');next_(slug,1)
-  click('play');next_(slug,2)
-  click('share','1');shot(slug);next_(slug,3)
-  click('order','blue');next_(slug,4)
-  click('choose','trace');next_(slug,5)
+  click('play');click('confidence','80');click('probe','1');next_(slug,2)
+  click('ask-choices');click('share','1');shot(slug);next_(slug,3)
+  click('order','blue');click('communication','clues');click('order','red');next_(slug,4)
+  click('trace-sources');click('source-answer','tie');click('source-case','1');click('source-answer','red');next_(slug,5)
  finish(slug)
 if __name__=='__main__':
  slugs=sys.argv[1:] or ['good-robot','shortcut-city','little-cafe','who-won','last-fish','everyone-says']

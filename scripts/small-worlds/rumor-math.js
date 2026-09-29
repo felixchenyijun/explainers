@@ -8,21 +8,21 @@ const RumorMath={
  factor(k){return k===0?'1':k>0?String(2**k):`1/${2**(-k)}`;},
  bar(k,label){const [a,b]=this.pair(k),p=100*a/(a+b);return `<div class="belief"><div class="belief-label"><span>${label}</span><strong>${this.fraction(k)} = ${this.percent(k)} red</strong></div><div class="belief-bar" aria-hidden="true"><span style="width:${p}%"></span></div><div class="belief-key"><span>RED ${this.percent(k)}</span><span>BLUE ${this.percent(-k)}</span></div></div>`;},
  toggle(action,label,open,target){return `<button class="btn secondary small math-toggle" id="btn-${action}" data-do="${action}" aria-expanded="${!!open}" aria-controls="${target}">${label} <span aria-hidden="true">${open?'−':'+'}</span></button>`;},
- panel({chapter,d,r,count,share,reveal,lab}){
+ panel({chapter,d,r,count,share,reveal,lab,opened=false}){
   if(!lab&&chapter<2&&!d.choice)return '';
-  const early=!lab&&chapter<2,ev=count?r.rows[count-1].publicEvidence:0;
+  const early=!lab&&chapter<2,ev=opened?r.allClues:count?r.rows[count-1].publicEvidence:0;
   let title='What did the crowd actually learn?',intro='Odds always read red : blue. Only a new observation can change them.',summary;
   if(early){
    title=chapter===0?'Why does one blue clue mean 2 in 3?':'Why can red beat your own blue clue?';
    summary=chapter===0?'<span>1 : 1</span><i>× ½ =</i><strong>1 : 2</strong>':'<span>1 : 1</span><i>× 2 × 2 × ½ =</i><strong>2 : 1</strong>';
-  }else summary=`<span>Public odds after ${count} ${share?'shared clues':'choices'}</span><strong>${this.odds(ev)}</strong>`;
+  }else summary=`<span>Public odds after ${count} ${opened?'opened clues':share?'shared clues':'choices'}</span><strong>${this.odds(ev)}</strong>`;
   let out=`<section class="rumor-math" aria-labelledby="math-title"><p class="math-kicker">FOLLOW THE EVIDENCE</p><h2 id="math-title">${title}</h2><p>${intro}</p><div class="odds-equation">${summary}</div>`;
   if(early){out+=this.bar(chapter===0?-1:1,'Your belief, including your blue clue');if(chapter===1)out+='<p class="math-aside">An observer who has seen only the two red choices has 4 : 1 odds (80% red). Your extra blue clue changes <em>your</em> odds to 2 : 1 (66.7% red).</p>';}
-  else{out+=this.bar(ev,share?'Observer given the shared clues':'Observer given only the choices');if(reveal)out+=this.bar(r.allClues,'Someone given all eight private clues');}
+  else{out+=this.bar(ev,opened?'Observer after opening all envelopes':share?'Observer given the shared clues':'Observer given only the choices');if(opened)out+=this.bar(r.publicEvidence,'Before opening: observer given only the choices');else if(reveal)out+=this.bar(r.allClues,'Someone given all eight private clues');}
   out+=this.toggle('math',d.mathOpen?'Close the working':'Show the math',d.mathOpen,'math-working');
   out+=`<div id="math-working" ${d.mathOpen?'':'hidden'}>`;
   if(early)out+=this.basics(chapter);
-  else out+=this.ledger(r,count,share,reveal,d);
+  else{if(opened)out+='<p class="math-aside">The ledger below reconstructs the original choices, before any envelopes were opened. The new overall belief above includes all the clues you have now seen.</p>';out+=this.ledger(r,count,share,reveal,d);}
   out+=this.toggle('math-proof',d.proofOpen?'Close the full derivation':'Bayes’ rule & the full derivation',d.proofOpen,'math-proof');
   out+=`<div class="math-proof" id="math-proof" ${d.proofOpen?'':'hidden'}>${this.proof(r,reveal,!early)}</div></div></section>`;
   return out;

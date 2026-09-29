@@ -32,9 +32,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-do]');if(!
  if(a==='motion'){S.calm=!S.calm;if(S.calm&&timer)stop();render();return;}
  if(a==='pause'){stop();Sound.silence();render();return;}
  if(a==='restart-chapter'){stop();Sound.silence();if(S.sandbox)S.lab=structuredClone(G.initialLab);else delete S.chapters[S.chapter];Sound.play('page');render(true);return;}
- if(a==='restart'){document.getElementById('reset-confirm').hidden=false;return;}
- if(a==='cancel-reset'){document.getElementById('reset-confirm').hidden=true;return;}
- if(a==='confirm-reset'){stop();S=fresh();document.getElementById('reset-confirm').hidden=true;render(true);return;}
+ if(a==='restart'){stop();Sound.silence();render();document.getElementById('reset-confirm').showModal();return;}
+ if(a==='cancel-reset'){document.getElementById('reset-confirm').close();return;}
+ if(a==='confirm-reset'){stop();Sound.silence();const calm=S.calm;S={...fresh(),calm};document.getElementById('reset-confirm').close();render(true);return;}
  G.act(a,v);Sound.action(a);render();if(a==='play'&&G.slug==='little-cafe')document.querySelector('.cafe-dashboard')?.scrollIntoView({block:'start',behavior:'instant'});
 });
 document.addEventListener('input',e=>{if(e.target.matches('input[type=range][data-key]'))document.getElementById('out-'+e.target.dataset.key).textContent=e.target.value+(e.target.dataset.unit||'');});
