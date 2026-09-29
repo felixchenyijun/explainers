@@ -1,0 +1,12 @@
+import {build} from 'esbuild';
+import {mkdir,copyFile,cp,readFile,writeFile} from 'node:fs/promises';
+import {gzipSync} from 'node:zlib';
+await mkdir('dist',{recursive:true});
+await build({entryPoints:['src/app.js'],bundle:true,minify:true,format:'iife',target:'es2022',outfile:'dist/app.js',legalComments:'eof'});
+for(const f of ['index.html','style.css'])await copyFile(f,'dist/'+f);
+await cp('public','dist',{recursive:true});
+const small=await readFile('public/data/small-bodies.json');
+await writeFile('dist/data/small-bodies.json.gz',gzipSync(small));
+const three=await readFile('node_modules/three/LICENSE','utf8');
+await writeFile('dist/THIRD-PARTY-NOTICES.txt',`THREE.JS\n${three}\n\nPLANETARY TEXTURES\nSolar System Scope / INOVE, CC BY 4.0. https://www.solarsystemscope.com/textures/\nhttps://creativecommons.org/licenses/by/4.0/\nBase maps use NASA imagery; color is enhanced and gaps may be reconstructed.\nNo NASA or JPL endorsement is implied.\n\nNASA MOON AND PLUTO MAPS\nNASA 3D Resources / JPL. NASA describes these assets as free and without copyright.\nhttps://github.com/nasa/NASA-3D-Resources\nOriginal source links are recorded in data/nasa-texture-sources.json.\n\nORBITAL DATA\nNASA/JPL Solar System Dynamics: Horizons and Small-Body Database.\nhttps://ssd.jpl.nasa.gov/horizons/\nhttps://ssd-api.jpl.nasa.gov/doc/sbdb_query.html\nSnapshot fetched September 29, 2026.\n`);
+console.log('Built Solar Atlas.');

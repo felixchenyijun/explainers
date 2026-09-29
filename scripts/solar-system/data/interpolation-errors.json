@@ -1,0 +1,117 @@
+[
+  {
+    "name": "Mercury",
+    "maxKm": 0.0048438300804235345,
+    "samples": 7
+  },
+  {
+    "name": "Venus",
+    "maxKm": 0.00004439099594717376,
+    "samples": 7
+  },
+  {
+    "name": "Earth",
+    "maxKm": 0.00002142213838722565,
+    "samples": 7
+  },
+  {
+    "name": "Mars",
+    "maxKm": 0.00001452397053470583,
+    "samples": 7
+  },
+  {
+    "name": "Jupiter",
+    "maxKm": 0.002144040050353656,
+    "samples": 7
+  },
+  {
+    "name": "Saturn",
+    "maxKm": 0.00005467570688549098,
+    "samples": 7
+  },
+  {
+    "name": "Uranus",
+    "maxKm": 0.00009596770488378192,
+    "samples": 7
+  },
+  {
+    "name": "Neptune",
+    "maxKm": 0.00008624864828098688,
+    "samples": 7
+  },
+  {
+    "name": "Pluto",
+    "maxKm": 0.0012712105055176321,
+    "samples": 7
+  },
+  {
+    "name": "Moon",
+    "maxKm": 0.017906188080769218,
+    "samples": 7
+  },
+  {
+    "name": "Phobos",
+    "maxKm": 0.002314914267201632,
+    "samples": 7
+  },
+  {
+    "name": "Io",
+    "maxKm": 0.1298883612943142,
+    "samples": 7
+  },
+  {
+    "name": "Europa",
+    "maxKm": 0.2016817551132354,
+    "samples": 7
+  },
+  {
+    "name": "Ganymede",
+    "maxKm": 0.33456314042592317,
+    "samples": 7
+  },
+  {
+    "name": "Callisto",
+    "maxKm": 0.4029409205909599,
+    "samples": 7
+  },
+  {
+    "name": "Metis",
+    "maxKm": 0.038687212060374045,
+    "samples": 7
+  },
+  {
+    "name": "Himalia",
+    "maxKm": 0.034135395113666714,
+    "samples": 7
+  },
+  {
+    "name": "Pasiphae",
+    "maxKm": 0.03416401007868981,
+    "samples": 7
+  },
+  {
+    "name": "Enceladus",
+    "maxKm": 0.06935088793951316,
+    "samples": 7
+  },
+  {
+    "name": "Titan",
+    "maxKm": 0.33894364683725703,
+    "samples": 7
+  },
+  {
+    "name": "Hyperion",
+    "maxKm": 0.24518458622477096,
+    "samples": 7
+  },
+  {
+    "name": "Triton",
+    "maxKm": 0.11105031214454099,
+    "samples": 7
+  },
+  {
+    "name": "Charon",
+    "maxKm": 0.006096354201056306,
+    "samples": 7
+  }
+]
