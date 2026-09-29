@@ -1,5 +1,12 @@
 [
   {
+    "slug": "a-year-of-power",
+    "title": "A year of power, hour by hour",
+    "category": "Energy & measurement",
+    "description": "Follow 17,520 real half-hours of Great Britain’s electricity. Flatten the same annual energy, restore its timing, and discover why the biggest total is not the biggest remainder.",
+    "format": "Interactive electricity ledger · 17,520 half-hours"
+  },
+  {
     "slug": "who-owns-an-hour",
     "title": "Who owns an hour?",
     "category": "Time & measurement",
