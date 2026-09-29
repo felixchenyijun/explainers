@@ -1,5 +1,12 @@
 [
   {
+    "slug": "the-air-between-us",
+    "title": "The air between us",
+    "category": "Atmospheric measurement",
+    "description": "Can the highest day change without taking another air sample? Follow two Dayton days through EPA’s correction, then explore which historical claims survive across 98,180 verified paired days.",
+    "format": "Prediction and reveal · hourly measurement bench · 336-site archive"
+  },
+  {
     "slug": "the-planets-we-can-see",
     "title": "The planets we can see",
     "category": "Astronomy & measurement",
