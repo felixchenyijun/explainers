@@ -16,6 +16,8 @@ function render(moveFocus=false){
  document.getElementById('motion').textContent=S.calm?'Motion off':'Motion on';
  document.getElementById('motion').setAttribute('aria-pressed',String(!S.calm));
  document.getElementById('back').hidden=S.sandbox||S.chapter===0;
+ document.getElementById('restart-chapter').textContent=S.sandbox?'Reset sandbox':'Restart chapter';
+ document.getElementById('restart-chapter').hidden=!S.sandbox&&S.chapter===G.chapters.length-1;
  if(moveFocus){document.getElementById('scene-title').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}else if(focus){document.getElementById(focus)?.focus({preventScroll:true});}
  Sound.update();Motion.after(motion);save();
 }
@@ -29,6 +31,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-do]');if(!
  if(a==='lab'){stop();S.sandbox=!S.sandbox;render(true);return;}
  if(a==='motion'){S.calm=!S.calm;if(S.calm&&timer)stop();render();return;}
  if(a==='pause'){stop();Sound.silence();render();return;}
+ if(a==='restart-chapter'){stop();Sound.silence();if(S.sandbox)S.lab=structuredClone(G.initialLab);else delete S.chapters[S.chapter];Sound.play('page');render(true);return;}
  if(a==='restart'){document.getElementById('reset-confirm').hidden=false;return;}
  if(a==='cancel-reset'){document.getElementById('reset-confirm').hidden=true;return;}
  if(a==='confirm-reset'){stop();S=fresh();document.getElementById('reset-confirm').hidden=true;render(true);return;}

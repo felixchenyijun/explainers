@@ -7,6 +7,9 @@ reports=[]
 def begin(slug):p.start(slug);click('lab')
 def assert_text(s):assert s in ev('document.getElementById("app").innerText'),s
 def finish(slug):
+ before=ev('SmallWorlds.getState()');click('restart-chapter')
+ assert ev('JSON.stringify(SmallWorlds.getState().lab)===JSON.stringify(G.initialLab)'),(slug,'sandbox reset')
+ assert ev('SmallWorlds.getState().chapters')==before['chapters'],(slug,'story progress changed')
  for width in [390,1440]:
   run('set','viewport',width,900)
   assert not ev('document.documentElement.scrollWidth>innerWidth'),(slug,width)

@@ -58,6 +58,16 @@ click('sound');run('reload');assert ev('Sound.enabled') and ev('document.getElem
 assert ev('Sound.ctx===null'),'Reload must not create an autoplay audio context.'
 click('sound');run('reload');assert not ev('Sound.enabled')
 print('PASS real audio output, immediate mute, persisted preference, and no autoplay',flush=True)
+before=ev('SmallWorlds.getState()');click('restart-chapter');after=ev('SmallWorlds.getState()')
+assert after['chapter']==before['chapter'] and after['unlocked']==before['unlocked']
+assert after['chapters']['0']==before['chapters']['0'] and not after['chapters'].get('1')
+assert float(clock()['cafeClock'])==0 and not ev('isRunning()')
+click('lab');run('scrollintoview','#control-rate');run('focus','#control-rate');run('press','End');run('press','Tab')
+assert ev('SmallWorlds.getState().lab.rate')==40
+click('restart-chapter');assert ev('JSON.stringify(SmallWorlds.getState().lab)===JSON.stringify(G.initialLab)')
+click('lab');assert ev('SmallWorlds.getState().chapters[0].tick')==12
+print('PASS chapter restart and sandbox reset preserve other progress',flush=True)
+
 click('motion');assert ev('SmallWorlds.getState().calm')
 assert ev('document.getAnimations().filter(a=>a.playState==="running").length')==0
 click('play');assert float(clock()['cafeClock'])==240
@@ -69,5 +79,5 @@ for width in [1440,390]:
  run('set','viewport',width,1000 if width>650 else 844)
  assert ev('document.documentElement.scrollWidth===document.documentElement.clientWidth')
 audit=run('a11y','--tags','wcag2a,wcag2aa');assert audit.get('counts',{}).get('violations',0)==0,audit.get('violations')
-(OUT/'results.json').write_text(json.dumps({'passed':['customer identity','exact service and recovery gap','clock and pause','speed','queue conservation','arrival graph counts','real audio','mute','audio preference persistence','no autoplay','motion off','OS reduced motion','desktop and mobile overflow']},indent=2))
+(OUT/'results.json').write_text(json.dumps({'passed':['chapter restart','sandbox reset','customer identity','exact service and recovery gap','clock and pause','speed','queue conservation','arrival graph counts','real audio','mute','audio preference persistence','no autoplay','motion off','OS reduced motion','desktop and mobile overflow']},indent=2))
 print('PASS operating-system reduced motion and both viewport widths',flush=True)
