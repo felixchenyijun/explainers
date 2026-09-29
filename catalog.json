@@ -1,5 +1,13 @@
 [
   {
+    "slug": "the-planets-we-can-see",
+    "title": "The planets we can see",
+    "category": "Astronomy & measurement",
+    "description": "Two equally deep dips in starlight, two different outcomes. Explore 146,294 real Kepler detection tests, follow individual stars, and see how evidence filters shape the planet catalog.",
+    "format": "Interactive detection experiment · 146,294 tests",
+    "note": "Complete embedded archive · about 15 MB"
+  },
+  {
     "slug": "time-in-the-ice",
     "title": "Two clocks in the ice",
     "category": "Climate & measurement",
