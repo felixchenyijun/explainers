@@ -2,6 +2,7 @@
 """Serialize a reviewed studio page into the personal collection and publish it.
 
 Usage: python3 scripts/publish-explainer.py /absolute/job/ready.json [--dry-run]
+Reviewed corrections require --replace-sha256 <current-published-page-sha256>.
 The job owns source/evidence; this is the only studio writer of catalog/index.
 Browser/editorial review is a human/agent responsibility, not inferred by this tool.
 """
@@ -87,7 +88,9 @@ def clean(root):
         raise RuntimeError('Uncommitted work exists; preserve it and retry after its owner finishes.')
 
 
-def publish(manifest, root=ROOT, dry_run=False):
+def publish(manifest, root=ROOT, dry_run=False, replace_sha256=None):
+    if replace_sha256 is not None and not re.fullmatch(r'[0-9a-f]{64}', replace_sha256):
+        raise ValueError('Replacement guard must be a full lowercase SHA-256.')
     root = Path(root).resolve()
     job, entry, body = load_job(manifest)
     slug = entry['slug']
@@ -108,32 +111,48 @@ def publish(manifest, root=ROOT, dry_run=False):
         catalog = root / 'catalog.json'
         index = root / 'docs/index.html'
         destination = root / 'docs' / slug
-        if destination.is_symlink():
+        target = destination / 'index.html'
+        if destination.is_symlink() or target.is_symlink():
             raise RuntimeError('Refusing a symlink at the destination.')
         items = json.loads(catalog.read_text())
         existing = [item for item in items if item['slug'] == slug]
+        updating = False
         if destination.exists() or existing:
-            same = (existing == [entry] and (destination / 'index.html').is_file()
-                    and (destination / 'index.html').read_bytes() == body)
-            if not same:
-                raise RuntimeError('Route already exists with different content; do not overwrite it.')
-            if not dry_run:
-                # Idempotent retry after a committed publication whose push was interrupted.
-                run(root, 'python3', 'scripts/publish.py')
-            return result(root, slug, sha(body), dry_run, reused=True)
+            same = existing == [entry] and target.is_file() and target.read_bytes() == body
+            if same:
+                if not dry_run:
+                    # An identical retry is safe even after a guarded update committed.
+                    run(root, 'python3', 'scripts/publish.py')
+                return result(root, slug, sha(body), dry_run, reused=True)
+            if replace_sha256 is None:
+                raise RuntimeError('Route already exists with different content; a reviewed correction requires --replace-sha256.')
+            if len(existing) != 1 or not target.is_file():
+                raise RuntimeError('A replacement requires one catalog entry and an existing page.')
+            if sha(target.read_bytes()) != replace_sha256:
+                raise RuntimeError('Published page changed since review; replacement SHA-256 does not match.')
+            updating = True
+        elif replace_sha256 is not None:
+            raise RuntimeError('A replacement requires an existing route; it cannot create one.')
         if dry_run:
             return {'dry_run': True, 'slug': slug, 'bytes': len(body), 'account': login,
-                    'source_sha256': sha(body), 'note': 'No shared files changed; editorial/browser review remains required.'}
+                    'source_sha256': sha(body), 'updating': updating,
+                    'note': 'No shared files changed; editorial/browser review remains required.'}
         before = {catalog: catalog.read_bytes(), index: index.read_bytes()}
+        if updating:
+            before[target] = target.read_bytes()
         written = {}
         paths = [f'docs/{slug}/index.html', 'catalog.json', 'docs/index.html']
         staged = False
         committed = False
         start_head = run(root, 'git', 'rev-parse', 'HEAD')
         try:
-            destination.mkdir()
-            (destination / 'index.html').write_bytes(body)
-            items.insert(0, entry)
+            destination.mkdir(exist_ok=updating)
+            target.write_bytes(body)
+            written[target] = body
+            if updating:
+                items = [entry if item['slug'] == slug else item for item in items]
+            else:
+                items.insert(0, entry)
             catalog.write_text(json.dumps(items, indent=2, ensure_ascii=False) + '\n')
             written[catalog] = catalog.read_bytes()
             run(root, 'python3', 'scripts/build-index.py')
@@ -148,13 +167,14 @@ def publish(manifest, root=ROOT, dry_run=False):
                 raise RuntimeError('Unrelated edits appeared during integration; preserving them.')
             if run(root, 'git', 'diff', '--cached', '--name-only'):
                 raise RuntimeError('Another task staged files during integration; preserving them.')
+            expected_staged = tracked_changes | (set() if updating else {paths[0]})
             run(root, 'git', 'add', '--', *paths)
             staged = True
-            if set(run(root, 'git', 'diff', '--cached', '--name-only').splitlines()) != allowed:
+            if set(run(root, 'git', 'diff', '--cached', '--name-only').splitlines()) != expected_staged:
                 raise RuntimeError('Unexpected staged paths; refusing to commit.')
             run(root, 'git', '-c', 'user.name=Felix Chen', '-c',
                 'user.email=41398105+felixchenyijun@users.noreply.github.com',
-                'commit', '-m', f'Publish {entry["title"]}')
+                'commit', '-m', f'{"Update" if updating else "Publish"} {entry["title"]}')
             committed = True
         except BaseException:
             # Roll back only our uncommitted, unchanged bytes. Never reset a branch.
@@ -164,8 +184,7 @@ def publish(manifest, root=ROOT, dry_run=False):
                 for path, data in before.items():
                     if path in written and path.read_bytes() == written[path]:
                         path.write_bytes(data)
-                target = destination / 'index.html'
-                if target.is_file() and not target.is_symlink() and target.read_bytes() == body:
+                if not updating and target.is_file() and not target.is_symlink() and target.read_bytes() == body:
                     target.unlink()
                     try:
                         destination.rmdir()
@@ -190,5 +209,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('manifest', type=Path)
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--replace-sha256', help='Expected current page SHA-256 for an independently reviewed correction.')
     args = parser.parse_args()
-    print(json.dumps(publish(args.manifest, dry_run=args.dry_run), indent=2))
+    print(json.dumps(publish(args.manifest, dry_run=args.dry_run, replace_sha256=args.replace_sha256), indent=2))

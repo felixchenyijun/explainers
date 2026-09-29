@@ -41,7 +41,9 @@ python3 scripts/publish-explainer.py /path/to/job/ready.json
 
 The manifest contains `slug`, `title`, `category`, `description`, `format`, an optional `note`, the absolute `source` path and its `source_sha256`. Its `review` object names absolute paths to inspected `desktop`, `mobile`, `recording` and `checks` files inside the same job directory. The checks JSON must identify the same `source_sha256` and record the actual validation and editorial review.
 
-The helper verifies the personal account, reviewed source identity, clean checkout and unused route. It fast-forwards main, integrates only the page/catalog/index, validates them, commits and invokes the existing personal publisher. Identical retries are safe; different content at an existing route is refused. It does not establish editorial quality or that Pages is live. Verify the deployed bytes and actual desktop/mobile interactions, and capture evidence against the resulting commit before reporting completion.
+The helper verifies the personal account, reviewed source identity, clean checkout and unused route. It fast-forwards main, integrates only the page/catalog/index, validates them, commits and invokes the existing personal publisher. Identical retries are safe; different content at an existing route is refused by default. It does not establish editorial quality or that Pages is live. Verify the deployed bytes and actual desktop/mobile interactions, and capture evidence against the resulting commit before reporting completion.
+
+For an independently reviewed correction, the coordinator can add `--replace-sha256 <current-published-page-sha256>` to both commands above. The helper checks that hash after fetching under the integration lock, preserves the route's catalog position, and refuses a stale or missing page. Fresh source review and final-commit evidence are still required; an identical retry after a committed update remains safe.
 
 Publication integration tests run entirely against temporary local Git repositories:
 

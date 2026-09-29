@@ -150,6 +150,55 @@ class PublicationTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'authenticated account'):
             publisher.publish(self.job('safe'), root=self.root)
 
+    def test_guarded_correction_preserves_catalog_position_and_other_page(self):
+        publisher.publish(self.job(), root=self.root)
+        target = self.root / 'docs/one/index.html'
+        old = target.read_bytes()
+        old_hash = publisher.sha(old)
+        publisher.publish(self.job('two'), root=self.root)
+        catalog = (self.root / 'catalog.json').read_bytes()
+        other = (self.root / 'docs/two/index.html').read_bytes()
+        manifest = self.job(content='Independently reviewed correction')
+        head = self.git('rev-parse', 'HEAD')
+        preview = publisher.publish(manifest, root=self.root, dry_run=True, replace_sha256=old_hash)
+        self.assertTrue(preview['updating'])
+        self.assertEqual(head, self.git('rev-parse', 'HEAD'))
+        self.assertEqual(old, target.read_bytes())
+        with self.assertRaisesRegex(RuntimeError, 'replacement SHA-256'):
+            publisher.publish(manifest, root=self.root, replace_sha256='0'*64)
+        self.assertEqual(old, target.read_bytes())
+        publisher.publish(manifest, root=self.root, replace_sha256=old_hash)
+        self.assertEqual((manifest.parent / 'index.html').read_bytes(), target.read_bytes())
+        self.assertEqual(catalog, (self.root / 'catalog.json').read_bytes())
+        self.assertEqual(other, (self.root / 'docs/two/index.html').read_bytes())
+        self.assertEqual('docs/one/index.html', self.git('diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD'))
+        head = self.git('rev-parse', 'HEAD')
+        self.assertTrue(publisher.publish(manifest, root=self.root, replace_sha256=old_hash)['reused'])
+        self.assertEqual(head, self.git('rev-parse', 'HEAD'))
+        self.assertEqual(head, self.git('rev-parse', 'origin/main'))
+        self.assertEqual('', self.git('status', '--porcelain'))
+
+    def test_failed_correction_restores_the_previous_page(self):
+        publisher.publish(self.job(), root=self.root)
+        paths = ['docs/one/index.html', 'catalog.json', 'docs/index.html']
+        before = {p:(self.root / p).read_bytes() for p in paths}
+        head = self.git('rev-parse', 'HEAD')
+        manifest = self.job(content='Invalid correction <img src="https://example.invalid/image.png">')
+        with self.assertRaises(subprocess.CalledProcessError):
+            publisher.publish(manifest, root=self.root, replace_sha256=publisher.sha(before[paths[0]]))
+        self.assertEqual(before, {p:(self.root / p).read_bytes() for p in paths})
+        self.assertEqual(head, self.git('rev-parse', 'HEAD'))
+        self.assertEqual('', self.git('status', '--porcelain'))
+
+    def test_replacement_requires_existing_route_and_valid_hash(self):
+        manifest = self.job()
+        with self.assertRaisesRegex(ValueError, 'full lowercase SHA-256'):
+            publisher.publish(manifest, root=self.root, replace_sha256='short')
+        with self.assertRaisesRegex(RuntimeError, 'existing route'):
+            publisher.publish(manifest, root=self.root, replace_sha256='0'*64)
+        self.assertFalse((self.root / 'docs/one').exists())
+        self.assertEqual('', self.git('status', '--porcelain'))
+
 
 if __name__ == '__main__':
     unittest.main()
