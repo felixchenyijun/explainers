@@ -1,5 +1,12 @@
 [
   {
+    "slug": "startup-lives",
+    "title": "The lives of startups",
+    "category": "Business & measurement",
+    "description": "Follow all eight ventures in YC’s first batch, then change what counts as making it. A sale can be a loss; two startup origins can share one exit.",
+    "format": "Linked life histories, a source-backed timeline, and a counting experiment"
+  },
+  {
     "slug": "kinship",
     "title": "Kinship — You are inside the tree",
     "category": "Evolutionary biology",
