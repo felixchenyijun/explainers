@@ -1,5 +1,12 @@
 [
   {
+    "slug": "automade",
+    "title": "Automade — From Coil to Car",
+    "category": "Engineering",
+    "description": "Follow one car through an animated 3D factory: stamping, welding, painting, powertrain, assembly and testing. Compare electric and combustion cars, then take the result apart.",
+    "format": "15 stations · interactive 3D"
+  },
+  {
     "slug": "bow-legs",
     "title": "Bow legs, from the inside",
     "category": "Anatomy",
