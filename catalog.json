@@ -1,5 +1,13 @@
 [
   {
+    "slug": "kinship",
+    "title": "Kinship — You are inside the tree",
+    "category": "Evolutionary biology",
+    "description": "Explore the complete OpenTree release from your own branch, then trace two organisms to their exact shared ancestor. Discover why a mushroom is closer kin to you than an oak.",
+    "format": "Interactive tree-of-life atlas · 2.39 million terminal taxa",
+    "note": "Complete OpenTree 16.1; evidence and unresolved junctions kept visible. About 34 MB."
+  },
+  {
     "slug": "lifetimes",
     "title": "Lifetimes — The company we keep",
     "category": "Human development",
