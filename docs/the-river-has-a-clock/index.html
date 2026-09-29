@@ -79,6 +79,10 @@ const rankYears=[...D.years].sort((a,b)=>b.value-a.value||a.year-b.year),rankFor
 const windowRows=()=>Array.from({length:15},(_,n)=>rows[state.anchor-7+n]||null);
 const eflag=(r,k)=>r&&D.qualifiers[r[3+k]]!==null;
 const Q=(r,k)=>r?r[k]:null;
+// One pixels-per-flow scale for all lanes. The lower lane has twice the
+// headroom, and must accommodate the separate Ohio record as well as A + M.
+function chartScale(maxUp,maxBottom){const scale=Math.min(84/Math.max(1,maxUp),168/Math.max(1,maxBottom)),ceiling=84/scale,power=10**Math.floor(Math.log10(ceiling)),tick=[1,2,5,10].map(n=>n*power).filter(n=>n<=ceiling+1e-9).pop();return {scale,tick};}
+function observationScale(w){const present=w.filter(Boolean);return chartScale(Math.max(1,...present.flatMap(r=>[r[1],r[2]])),Math.max(1,...present.flatMap(r=>[r[1]+r[2],r[3]])));}
 function persist(){const p=new URLSearchParams({date:rows[state.anchor][0],day:String(state.cursor),shift:String(state.delay),spread:state.spread?'1':'0',joined:state.joined?'1':'0'});if(state.sort==='flow')p.set('sort','flow');history.replaceState(null,'','#'+p);}
 function announce(s){$('announce').textContent=s;}
 function chooseDate(s,{joined=true}={}){if(!validDate(s)){announce('Choose a date from 1 January 1960 through 31 December 2003.');$('anchor-date').value=rows[state.anchor][0];return;}state.anchor=byDate.get(s);state.cursor=7;state.delay=0;state.spread=false;state.joined=joined;state.guess=null;state.calYear=+s.slice(0,4);state.calMonth=+s.slice(5,7)-1;renderAll();announce('Selected '+full(s)+'. The record and experiment now use the surrounding 15 days.');}
@@ -100,7 +104,7 @@ const rect=(x,y,w,h,fill,attrs='')=>`<rect x="${x}" y="${y}" width="${Math.max(0
 function stepPath(values,x0,step,baseline,scale){let d='',on=false;values.forEach((v,i)=>{if(v==null){on=false;return;}const x=x0+i*step,y=baseline-v*scale;d+=(on?'V':'M'+x+',')+(on?y:y);d+='H'+(x+step);on=true;});return d;}
 function diamond(x,y,color,bg){return `<path d="M${x} ${y-4}l4 4-4 4-4-4Z" fill="${bg}" stroke="${color}" stroke-width="1.5"/>`;}
 function obsDraw(){
- const svg=$('obs-chart'),W=svg.clientWidth||600,H=485,L=42,R=12,step=(W-L-R)/15,wr=windowRows(),mx=Math.max(1,...wr.filter(Boolean).flatMap(r=>[r[1],r[2]])),scale=84/mx,b=[112,238,448],light='#e3e9dc';
+ const svg=$('obs-chart'),W=svg.clientWidth||600,H=485,L=42,R=12,step=(W-L-R)/15,wr=windowRows(),{scale,tick}=observationScale(wr),b=[112,238,448],light='#e3e9dc';
  obsGeo={L,step,W};svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
  let s=`<title>Recorded daily flows, ${full(dateAt(state.anchor-7))} to ${full(dateAt(state.anchor+7))}. Same scale in all three lanes. Hollow diamonds mean estimated.</title>`;
  s+=rect(L+state.cursor*step,23,step,422,'#dce6d5','opacity=".55"');
@@ -110,7 +114,7 @@ function obsDraw(){
  s+=svgText(W-R,13,'ft³/s',`text-anchor="end" font-size="11" fill="${C.muted}"`);
  for(let k=0;k<3;k++){
   s+=line(L,b[k],W-R,b[k],C.line);s+=svgText(L-6,b[k]+4,'0',`text-anchor="end" font-size="11" fill="${C.muted}"`);
-  const tick=Math.max(10000,Math.floor(mx/50000)*50000||Math.floor(mx/10000)*10000);const yy=b[k]-tick*scale;
+  const yy=b[k]-tick*scale;
   if(k!==2||state.joined){s+=line(L,yy,W-R,yy,light);s+=svgText(L-6,yy+4,(tick/1000)+'k',`text-anchor="end" font-size="11" fill="${C.muted}"`);}
  }
  wr.forEach((r,i)=>{
@@ -136,7 +140,7 @@ function renderReadout(){const wr=windowRows(),r=wr[state.cursor],d=dateAt(state
  $('obs-status').textContent=wr.some(r=>r&&[1,2,3].some(k=>eflag(r,k)))?'† Hollow diamonds mark USGS-estimated values.':'All shown values are approved; none carries an estimated flag.';
 }
 function modelDraw(){const svg=$('model-chart'),W=svg.clientWidth||600,H=490,L=42,R=12,step=(W-L-R)/29,wr=windowRows(),mod=modelFor(wr,state.delay,state.spread);modelGeo={L,step,W};svg.setAttribute('viewBox',`0 0 ${W} ${H}`);if(!mod){svg.innerHTML=svgText(W/2,200,'A complete 15-day window is needed.',`fill="${C.white}" font-size="13" text-anchor="middle"`);return;}
- const scale=84/mod.maxUp,b=[112,238,448],x=t=>L+(t+6)*step;
+ const {scale,tick}=chartScale(mod.maxUp,2*mod.maxUp),b=[112,238,448],x=t=>L+(t+6)*step;
  let s=`<title>Hypothetical model. Monongahela moved ${state.delay} days${state.spread?', spread across three days':''}. Peak ${num(mod.peak)} cubic feet per second. Volume ${mod.volume} cubic feet. All tails visible.</title>`;
  s+=rect(x(0),25,15*step,419,'#4e7259','opacity=".28"');
  s+=svgText(L,13,'Allegheny · unchanged',`fill="${C.aLight}" font-size="13" font-weight="700"`);
@@ -144,7 +148,6 @@ function modelDraw(){const svg=$('model-chart'),W=svg.clientWidth||600,H=490,L=4
  s+=svgText(L,266,'A + M · sum',`fill="${C.white}" font-size="13" font-weight="700"`)+svgText(W-R,266,'╌ Original sum',`fill="#c6d7ca" text-anchor="end" font-size="11"`);
  s+=svgText(W-R,13,'ft³/s',`text-anchor="end" font-size="11" fill="#c6d7ca"`);
  b.forEach(bb=>{s+=line(L,bb,W-R,bb,'#71927c');s+=svgText(L-6,bb+4,'0','text-anchor="end" font-size="11" fill="#c6d7ca"');});
- const tick=Math.max(10000,Math.floor(mod.maxUp/50000)*50000||Math.floor(mod.maxUp/10000)*10000);
  b.forEach(bb=>{s+=line(L,bb-tick*scale,W-R,bb-tick*scale,'#416650');s+=svgText(L-6,bb-tick*scale+4,tick/1000+'k','text-anchor="end" font-size="11" fill="#c6d7ca"');});
  // Ghost outlines always show the unmodified copied records; they never add volume.
  s+=`<path d="${stepPath(Array(6).fill(0).concat(wr.map(r=>r[2]),Array(8).fill(0)),L,step,b[1],scale)}" stroke="#b5c5b8" stroke-width="1" stroke-dasharray="3 3" opacity=".65" fill="none"/>`;
@@ -210,7 +213,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',
 let scrollTick=false;function orient(){let current='record';for(const id of ['record','experiment','archive'])if($(id).getBoundingClientRect().top<150)current=id;document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+current));scrollTick=false;}window.addEventListener('scroll',()=>{if(!scrollTick){scrollTick=true;requestAnimationFrame(orient);}},{passive:true});orient();
 window.addEventListener('hashchange',()=>{const p=new URLSearchParams(location.hash.slice(1));if(validDate(p.get('date'))){state.anchor=byDate.get(p.get('date'));state.cursor=clamp(+p.get('day')||0,0,14);state.delay=clamp(Math.round(+p.get('shift')||0),-6,6);state.spread=p.get('spread')==='1';state.joined=p.get('joined')==='1';state.calYear=+rows[state.anchor][0].slice(0,4);state.calMonth=+rows[state.anchor][0].slice(5,7)-1;state.guess=null;renderAll();}});
 // Exposed for reproducible scientific/UI verification; no network or private state.
-window.River={getState:()=>({...state,date:rows[state.anchor][0]}),getModel:()=>modelFor(windowRows(),state.delay,state.spread),modelFor,data:D,sources:SOURCES,chooseDate,csv};
+window.River={getState:()=>({...state,date:rows[state.anchor][0]}),getModel:()=>modelFor(windowRows(),state.delay,state.spread),modelFor,chartScale,observationScale,data:D,sources:SOURCES,chooseDate,csv};
 renderAll();
 })();
 </script>
