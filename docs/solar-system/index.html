@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070b10">
 <meta name="description" content="Explore the solar system in Three.js at true physical scale. 460 moons, 39,032 small bodies, JPL Horizons trajectories, searchable checkpoints, and reversible time.">
 <title>Solar Atlas — Space, at its actual scale</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=f9fc9fd441a1">
 </head>
 <body>
 <div id="scene" aria-label="Interactive three dimensional solar system"></div>
@@ -32,7 +32,9 @@
  <div class="popover-head"><h2>What you see</h2><button id="close-layers" aria-label="Close display layers">×</button></div>
  <label><input id="show-labels" type="checkbox" checked><span>World labels<small>Names of nearby objects</small></span></label>
  <label><input id="show-markers" type="checkbox" checked><span>Navigation markers<small>Screen-sized locators, not physical bodies</small></span></label>
+ <label><input id="show-lights" type="checkbox" checked><span>Distant planet lights<small>Colored points; no name labels required</small></span></label>
  <label><input id="show-orbits" type="checkbox" checked><span>Orbit guides<small>Local ellipses; positions use Horizons</small></span></label>
+ <label><input id="show-trails" type="checkbox" checked><span>Highlighted motion trails<small>Fading tails follow the direction of time</small></span></label>
  <label><input id="show-small" type="checkbox" checked><span>Small-body catalog<small>39,032 real objects, shown as markers</small></span></label>
  <label><input id="show-activity" type="checkbox" checked><span>Solar activity<small>Illustrative corona and magnetic loops</small></span></label>
  <label><input id="show-regions" type="checkbox" checked><span>Distant regions<small>Oort cloud is a conceptual distribution</small></span></label>
@@ -67,5 +69,5 @@
 </div>
 <div id="loading" class="loading"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="9"/><ellipse cx="40" cy="40" rx="36" ry="14" transform="rotate(-30 40 40)"/></svg><h2>A little perspective.</h2><p id="loading-text">Preparing the solar system…</p><small>REAL DISTANCES. REAL WORLDS.</small></div>
 <dialog id="modal"><div class="modal-head"><span class="eyebrow">THE ATLAS, EXPLAINED</span><button id="close-modal" aria-label="Close dialog">×</button></div><div id="modal-body"></div></dialog>
-<script src="app.js" defer></script>
+<script src="app.js?v=f4f52b852056" defer></script>
 </body></html>

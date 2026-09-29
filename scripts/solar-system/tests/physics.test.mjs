@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
-import {AU,DAY,hermite,ellipseFromState,smallPosition,prepareSmall,utcToTDB} from '../src/physics.js';
+import {AU,DAY,hermite,ellipseFromState,closeOrbitFromState,smallPosition,prepareSmall,utcToTDB} from '../src/physics.js';
 import {orientationMatrix,orientationAngles} from '../src/orientation.js';
+import {trailTimes,bodyTrail} from '../src/trail-physics.js';
 const catalog=JSON.parse(fs.readFileSync('public/data/catalog.json'));
 const orientation=JSON.parse(fs.readFileSync('public/data/orientation.json'));
 const reference=JSON.parse(fs.readFileSync('data/orientation-reference.json'));
@@ -56,6 +57,36 @@ test('Reversing time gives the same physical state without accumulating integrat
  const b=catalog.bodies.find(b=>b.id==='502'),buffer=gunzipSync(fs.readFileSync('public/data/'+b.ephem.file)),v=new Float64Array(buffer.buffer,buffer.byteOffset,buffer.byteLength/8),jd=2461222.25;
  const before=Array.from(hermite(v,b.ephem,jd));hermite(v,b.ephem,jd+12.123);hermite(v,b.ephem,jd-42.003);
  assert.deepEqual(Array.from(hermite(v,b.ephem,jd)),before);
+});
+test('Motion tails reverse direction and never sample beyond the trajectory edition',()=>{
+ const jd=utcToTDB(Date.UTC(2026,6,1));
+ const forward=trailTimes(jd,365,1),reverse=trailTimes(jd,365,-1);
+ assert.equal(forward[0],jd);assert.equal(reverse[0],jd);
+ assert.ok(forward.at(-1)<jd);assert.ok(reverse.at(-1)>jd);
+ assert.ok(Math.abs(jd-forward.at(-1)-(reverse.at(-1)-jd))<1e-9);
+ const start=utcToTDB(Date.UTC(2026,0,1)),end=utcToTDB(Date.UTC(2026,11,31,23,59,59));
+ assert.equal(trailTimes(start,500,1),null);assert.equal(trailTimes(end,500,-1),null);
+ assert.ok(trailTimes(start+.1,500,1).every(t=>t>=start));
+ assert.ok(trailTimes(end-.1,500,-1).every(t=>t<=end));
+});
+test('Close-up orbit passes through the selected planet and retains the physical orbit radius',()=>{
+ const r=AU,mu=132712440041.2794*DAY*DAY,angle=1.237,v=Math.sqrt(mu/r);
+ const state=new Float64Array([r*Math.cos(angle),r*Math.sin(angle),0,-v*Math.sin(angle),v*Math.cos(angle),0]);
+ const line=closeOrbitFromState(state,mu,6371*5.3);
+ assert.ok(Math.hypot(...line.vertices.slice(32*3,33*3))<1e-6);
+ for(let i=0;i<line.vertices.length;i+=3){
+  const x=state[0]+line.vertices[i],y=state[1]-line.vertices[i+2],z=state[2]+line.vertices[i+1];
+  assert.ok(Math.abs(Math.hypot(x,y,z)-r)<.005);
+ }
+});
+test('Moon tail head and past points are sampled from the same JPL trajectory as the body',()=>{
+ const b={...catalog.bodies.find(x=>x.id==='502')},buf=gunzipSync(fs.readFileSync('public/data/'+b.ephem.file));
+ b.data=new Float64Array(buf.buffer,buf.byteOffset,buf.byteLength/8);
+ const jd=utcToTDB(Date.UTC(2026,6,1)),trail=bodyTrail(b,jd,1);
+ for(let i=0;i<trail.times.length;i++){
+  const sample=hermite(b.data,b.ephem,trail.times[i]);
+  assert.deepEqual(Array.from(trail.values.slice(i*3,i*3+3)),Array.from(sample.slice(0,3)));
+ }
 });
 test('161 independent Horizons midpoint checks agree within 0.5 km; planets within 10 m',()=>{
  const references=JSON.parse(fs.readFileSync('data/ephemeris-reference.json'));let max=0,count=0;

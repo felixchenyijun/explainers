@@ -40,17 +40,37 @@ export function smallPosition(b,jd,out=new Float64Array(3),offset=0){
 }
 const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
 const norm=v=>Math.hypot(...v);
-export function ellipseFromState(state,mu,segments=320){
+function orbitalFrame(state,mu){
  const r=Array.from(state.slice(0,3)),v=Array.from(state.slice(3,6)),rn=norm(r),h=cross(r,v),hn=norm(h);
  if(!rn||!hn)return null;
  const ev=cross(v,h).map((x,k)=>x/mu-r[k]/rn),e=norm(ev);
  if(e>=.99)return null;
  const p=hn*hn/mu,a=p/(1-e*e),axis=e>1e-8?ev.map(x=>x/e):r.map(x=>x/rn),q=cross(h.map(x=>x/hn),axis);
+ return {p,a,axis,q,e,r,rn};
+}
+export function ellipseFromState(state,mu,segments=320){
+ const frame=orbitalFrame(state,mu);if(!frame)return null;
+ const {p,a,axis,q,e}=frame;
  const vertices=new Float32Array((segments+1)*3);
  for(let j=0;j<=segments;j++){
   const f=j/segments*2*Math.PI,rad=p/(1+e*Math.cos(f))/a;
   const x=(axis[0]*Math.cos(f)+q[0]*Math.sin(f))*rad,y=(axis[1]*Math.cos(f)+q[1]*Math.sin(f))*rad,z=(axis[2]*Math.cos(f)+q[2]*Math.sin(f))*rad;
   vertices.set([x,z,-y],j*3);
+ }
+ return {vertices,a,e};
+}
+// A dense local section preserves the exact current position at close range.
+// Subtract in double precision before Float32 conversion, as for body geometry.
+export function closeOrbitFromState(state,mu,range,segments=64){
+ const frame=orbitalFrame(state,mu);if(!frame)return null;
+ const {p,a,axis,q,e,r,rn}=frame;
+ const dot=(x,y)=>x.reduce((sum,v,i)=>sum+v*y[i],0);
+ const phase=Math.atan2(dot(r,q),dot(r,axis)),span=Math.min(Math.PI,range*1.8/rn);
+ const vertices=new Float32Array((segments+1)*3);
+ for(let i=0;i<=segments;i++){
+  const f=phase+(i/segments*2-1)*span,rad=p/(1+e*Math.cos(f));
+  const v=axis.map((x,k)=>(x*Math.cos(f)+q[k]*Math.sin(f))*rad-r[k]);
+  vertices.set([v[0],v[2],-v[1]],i*3);
  }
  return {vertices,a,e};
 }

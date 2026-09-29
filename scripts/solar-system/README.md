@@ -30,7 +30,10 @@ range, with the identical conversion applied to objects and distances. No planet
 size multiplier or logarithmic distance compression is used. The depth buffer is
 logarithmic; space itself is not.
 
-Screen-sized navigation markers, labels, orbit strokes and stars are overlays.
+Screen-sized navigation markers, distant planet lights, labels, orbit strokes,
+motion tails and stars are overlays. Distant planets retain their geometric sky
+direction and approximate colors without requiring name labels; their point
+brightness is enhanced, not photometrically calibrated.
 They can be disabled. Unmeasured moon sizes have markers only. Exaggerated fill
 light and ring opacity are disclosed in the viewer.
 
@@ -52,8 +55,14 @@ light and ring opacity are disclosed in the viewer.
 - 39,032 displayed small bodies come from SBDB. Their osculating elements use
   two-body Kepler propagation, so they do not have Horizons-level accuracy.
   The raw source contains one extra Pluto row, deliberately deduplicated.
-- Orbit strokes are osculating ellipse guides. Actual planet/moon motion uses the
+- Selected planet and moon orbit strokes remain highlighted at close range. A
+  dense local section is centered on the actual current state, avoiding coarse
+  whole-orbit chords and GPU precision loss. Orbit strokes are osculating ellipse guides. Actual planet/moon motion uses the
   integrated Horizons source and does not remain on one fixed ellipse.
+- Fading motion tails use the same parent-relative trajectory as the body and
+  reverse with time direction. History is bounded by the 2026 dataset. The small
+  body catalog uses shorter two-segment Kepler tails; selected objects use denser
+  curves. Tail length adapts to camera range without altering the orbit or size.
 - Ring extents and major gaps use NASA/PDS dimensions. Annuli omit eccentricity,
   arcs, vertical structure, individual particles and transient waves.
 - Solar prominence loops, corona, procedural surfaces and the Oort distribution

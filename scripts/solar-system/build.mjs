@@ -1,9 +1,13 @@
 import {build} from 'esbuild';
 import {mkdir,copyFile,cp,readFile,writeFile} from 'node:fs/promises';
 import {gzipSync} from 'node:zlib';
+import {createHash} from 'node:crypto';
 await mkdir('dist',{recursive:true});
 await build({entryPoints:['src/app.js'],bundle:true,minify:true,format:'iife',target:'es2022',outfile:'dist/app.js',legalComments:'eof'});
 for(const f of ['index.html','style.css'])await copyFile(f,'dist/'+f);
+const digest=async path=>createHash('sha256').update(await readFile(path)).digest('hex').slice(0,12);
+const html=await readFile('index.html','utf8');
+await writeFile('dist/index.html',html.replace('src="app.js"','src="app.js?v='+await digest('dist/app.js')+'"').replace('href="style.css"','href="style.css?v='+await digest('dist/style.css')+'"'));
 await cp('public','dist',{recursive:true});
 const small=await readFile('public/data/small-bodies.json');
 await writeFile('dist/data/small-bodies.json.gz',gzipSync(small));
