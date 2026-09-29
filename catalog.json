@@ -83,11 +83,11 @@
     "slug": "inference-studio",
     "title": "Inside inference",
     "category": "AI systems",
-    "description": "Fifteen animated lessons: tokens, prefill and decoding through batching, parallelism, inference engines and the data center.",
-    "format": "3D interactive lessons",
+    "description": "Build an understanding of inference through 15 guided visual arguments: attention, prefill, KV caches, quantization, parallelism and production serving. Work the numbers and test your intuition.",
+    "format": "15 lessons · 90 guided steps",
     "secondary": {
       "href": "inference-studio/watch.html",
-      "label": "Captioned video series"
+      "label": "Earlier 80-second video recaps"
     }
   },
   {
