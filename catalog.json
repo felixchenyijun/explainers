@@ -1,5 +1,13 @@
 [
   {
+    "slug": "human-atlas",
+    "title": "The Human Atlas",
+    "category": "World history",
+    "description": "Turn the globe and move through 4,700 years. Explore 70 societies, follow their changing stories, and discover the worlds that existed at the same time.",
+    "format": "70 societies · 233 historical chapters",
+    "note": "3000 BCE–1700 CE · representative locations, not territorial borders"
+  },
+  {
     "slug": "automade",
     "title": "Automade — From Coil to Car",
     "category": "Engineering",
