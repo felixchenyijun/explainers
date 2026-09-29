@@ -1,5 +1,12 @@
 [
   {
+    "slug": "groundwork",
+    "title": "Groundwork — From Ground to Home",
+    "category": "Engineering",
+    "description": "Watch a house grow from survey stakes to a finished home. Explore the structure, peel away walls, separate the floors, and trace the hidden paths of water, air, electricity and structural loads.",
+    "format": "18 stages · interactive 3D"
+  },
+  {
     "slug": "human-atlas",
     "title": "The Human Atlas",
     "category": "World history",
