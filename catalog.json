@@ -1,5 +1,12 @@
 [
   {
+    "slug": "after-the-earth-moves",
+    "title": "After the earth moves",
+    "category": "Earth science",
+    "description": "Follow one earthquake through a catalog of 34,091. Turn a section through the ground, remove the small events, and see what the pattern can—and cannot—tell us about a fault system.",
+    "format": "Linked earthquake field notebook"
+  },
+  {
     "slug": "startup-lives",
     "title": "The lives of startups",
     "category": "Business & measurement",
