@@ -1,5 +1,12 @@
 [
   {
+    "slug": "ocean-memory",
+    "title": "The ocean remembers",
+    "category": "Ocean science",
+    "description": "Nearly identical surface temperatures conceal different oceans underneath. Follow 495 real Argo profiles, lower a pressure probe, and watch the answer change with depth.",
+    "format": "Interactive profile instrument · 53,454 measurements"
+  },
+  {
     "slug": "after-the-earth-moves",
     "title": "After the earth moves",
     "category": "Earth science",
