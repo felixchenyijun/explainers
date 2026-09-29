@@ -6,6 +6,8 @@ License: https://creativecommons.org/licenses/by/4.0/
 Changes: POLITY selection, temporal filtering, geometry repair, simplification, rounding, orientation, shared-arc packing, grouping, and the corrections documented in RESEARCH.md.
 
 Geography and static relief/vegetation: Natural Earth and Natural Earth II, public domain, via world-atlas 2.0.2 and NACIS.
+Ocean depths: Natural Earth 1:10m bathymetry, derived from SRTM Plus, public domain. Seven depth bands were simplified, rasterized, and combined with the relief layer.
+Source: https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-bathymetry/
 Wikipedia encyclopedia summaries: contributors, CC BY-SA 4.0. Original article links are provided in the atlas.
 Wikimedia Commons images: author, file page, and original license are included in each image enlargement. Resized and converted to WebP.
 Wikidata factual identifiers, dates, and locations: CC0.
