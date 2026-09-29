@@ -29,6 +29,8 @@ The atlas begins at 3000 BCE, within the age of early cities, and ends at 2024 C
 - Nearby points become a dated cluster. Opening it lists each event with its own date. No event is shifted to manufacture visual spacing.
 - Labels are distributed across the displayed window and culled for available space. The event list preserves access to every eligible event.
 - The selected year stays in view. Previous/next window controls move through equal spans; changing era lenses preserves date and scale.
+- The timeline has a draggable upper edge and a hide/restore control. Height and visibility are saved locally. Event-label density adapts to both width and available height; secondary settings live in Options.
+- Selecting a civilization adds its existing, sourced narrative milestones in the same color as its territory. World events stay available with reduced emphasis. Fit period chooses a decade, century, millennium, or full-history window that contains the selected coverage. For a political entity without a curated civilization story, the two timeline markers explicitly identify first/last mapped years, not founding or collapse dates.
 - Selecting a featured person adds their lifespan and life-chapter markers. Chapter navigation updates the map year and position together.
 - People search accepts accents, aliases, and close spellings. It searches 80 featured biographies alongside political entities, events, places, and years. Optional Wikipedia/Wikidata lookup provides further people and birth context without claiming curated life chapters for every person.
 
