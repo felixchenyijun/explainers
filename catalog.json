@@ -1,5 +1,12 @@
 [
   {
+    "slug": "a-city-is-a-commute",
+    "title": "What a city line hides",
+    "category": "Cities & measurement",
+    "description": "Nearly equal job and resident-worker totals hide thousands of opposite links. Move a boundary across real Census data, then assemble your own Bay Area to see what changes—and what stays fixed.",
+    "format": "Interactive boundary experiment · 230 areas · 2,643 tract portions"
+  },
+  {
     "slug": "the-air-between-us",
     "title": "The air between us",
     "category": "Atmospheric measurement",
