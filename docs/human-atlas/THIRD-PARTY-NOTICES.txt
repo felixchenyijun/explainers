@@ -1,8 +1,15 @@
 The Human Atlas — third-party notices
 
-Geographic data: Natural Earth, public domain, via world-atlas 2.0.2.
-D3 7.9.0 and TopoJSON Client 3.1.0 are distributed under the ISC license.
-Fraunces and DM Sans are distributed under the SIL Open Font License.
+Territories: Cliopatria v0.2.0-duplicate, by Bennett and colleagues / Seshat Global History Databank, CC BY 4.0.
+Source: https://github.com/Seshat-Global-History-Databank/cliopatria
+License: https://creativecommons.org/licenses/by/4.0/
+Changes: POLITY selection, temporal filtering, geometry repair, simplification, rounding, orientation, shared-arc packing, grouping, and the corrections documented in RESEARCH.md.
+
+Geography and static relief/vegetation: Natural Earth and Natural Earth II, public domain, via world-atlas 2.0.2 and NACIS.
+Wikipedia encyclopedia summaries: contributors, CC BY-SA 4.0. Original article links are provided in the atlas.
+Wikimedia Commons images: author, file page, and original license are included in each image enlargement. Resized and converted to WebP.
+Wikidata factual identifiers, dates, and locations: CC0.
+D3 7.9.0 and TopoJSON Client 3.1.0: ISC. Fraunces and DM Sans: SIL Open Font License.
 
 Copyright 2010-2023 Mike Bostock
 
@@ -222,3 +229,8 @@ INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
 DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
+
+
+# License
+
+This data is licensed under a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/), which permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long as you give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons license, and indicate if changes were made.

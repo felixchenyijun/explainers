@@ -1,5 +1,13 @@
 [
   {
+    "slug": "solar-system",
+    "title": "Solar Atlas — Space, at its actual scale",
+    "category": "Astronomy",
+    "description": "Fly between worlds in a Three.js solar system with true physical sizes and distances, 460 cataloged moons, 39,032 small bodies, orbit lines, saved checkpoints and reversible time.",
+    "format": "True-scale 3D · JPL Horizons · IAU rotation",
+    "note": "2026 trajectories; coverage and approximation limits documented in the atlas."
+  },
+  {
     "slug": "groundwork",
     "title": "Groundwork — From Ground to Home",
     "category": "Engineering",
@@ -10,9 +18,9 @@
     "slug": "human-atlas",
     "title": "The Human Atlas",
     "category": "World history",
-    "description": "Turn the globe and move through 4,700 years. Explore 70 societies, follow their changing stories, and discover the worlds that existed at the same time.",
-    "format": "70 societies · 233 historical chapters",
-    "note": "3000 BCE–1700 CE · representative locations, not territorial borders"
+    "description": "Explore changing territories on a globe, follow historical lives, and travel through 5,024 years with illustrated stories, world events, and regional eras.",
+    "format": "70 societies · 80 lives · 101 world events",
+    "note": "3000 BCE–2024 CE · territories, terrain, and a zoomable timeline"
   },
   {
     "slug": "automade",

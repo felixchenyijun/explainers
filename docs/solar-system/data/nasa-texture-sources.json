@@ -1,0 +1,22 @@
+{
+  "europa": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Jupiter%20-%20Europa/Jupiter%20-%20Europa.jpg",
+  "io": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Jupiter%20-%20Io%20%28A%29/Jupiter%20-%20Io%20%28A%29.jpg",
+  "ganymede": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Jupiter%20-%20Ganymede/Jupiter%20-%20Ganymede.jpg",
+  "callisto": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Jupiter%20-%20Callisto/Jupiter%20-%20Callisto.jpg",
+  "pluto": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Pluto/Pluto.jpg",
+  "charon": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Pluto%20-%20Charon/Pluto%20-%20Charon.jpg",
+  "enceladus": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Saturn%20-%20Enceladus/Saturn%20-%20Enceladus.jpg",
+  "dione": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Saturn%20-%20Dione/Saturn%20-%20Dione.jpg",
+  "iapetus": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Saturn%20-%20Iapetus/Saturn%20-%20Iapetus.jpg",
+  "mimas": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Saturn%20-%20Mimas/Saturn%20-%20Mimas.jpg",
+  "rhea": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Saturn%20-%20Rhea/Saturn%20-%20Rhea.jpg",
+  "tethys": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Saturn%20-%20Tethys/Saturn%20-%20Tethys.jpg",
+  "triton": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Neptune%20-%20Triton/Neptune%20-%20Triton.jpg",
+  "phobos": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Mars%20-%20Phobos/Mars%20-%20Phobos.jpg",
+  "deimos": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Mars%20-%20Deimos/Mars%20-%20Deimos.jpg",
+  "ariel": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Uranus%20-%20Ariel/Uranus%20-%20Ariel.jpg",
+  "miranda": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Uranus%20-%20Miranda/Uranus%20-%20Miranda.jpg",
+  "oberon": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Uranus%20-%20Oberon/Uranus%20-%20Oberon.jpg",
+  "titania": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Uranus%20-%20Titania/Uranus%20-%20Titania.jpg",
+  "umbriel": "https://github.com/nasa/NASA-3D-Resources/blob/master/Images%20and%20Textures/Uranus%20-%20Umbriel/Uranus%20-%20Umbriel.jpg"
+}
