@@ -40,7 +40,7 @@ function experiment(){
 }
 function updateStep(){
  const c=chapter(),a=step();
- text('scene-title',`${String(state.step+1).padStart(2,'0')} / 06 · ${a.title}`);text('equation',a.equation);
+ text('scene-title',`${String(state.step+1).padStart(2,'0')} / 06 · ${a.title}`);text('equation',`Reference calculation · ${a.equation}`);
  text('kicker',a.kicker);text('step-title',a.title);text('body',a.body);text('insight',a.insight);text('challenge',a.challenge);text('answer',a.answer);
  $('answer').hidden=true;$('answer-toggle').setAttribute('aria-expanded','false');text('answer-toggle','Reveal the reasoning');
  $('stage').setAttribute('aria-label',`${c.title}. Step ${state.step+1}: ${a.title}. ${a.insight}`);
