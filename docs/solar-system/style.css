@@ -5,3 +5,5 @@
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 [hidden]{display:none!important}
 #nav{pointer-events:none}#nav .rail,#nav .drawer{pointer-events:auto}
+
+#nav:not(.open) .drawer{pointer-events:none}
