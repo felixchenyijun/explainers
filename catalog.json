@@ -1,5 +1,13 @@
 [
   {
+    "slug": "solar-system",
+    "title": "Solar Atlas — Space, at its actual scale",
+    "category": "Astronomy",
+    "description": "Fly between worlds in a Three.js solar system with true physical sizes and distances, 460 cataloged moons, 39,032 small bodies, orbit lines, saved checkpoints and reversible time.",
+    "format": "True-scale 3D · JPL Horizons · IAU rotation",
+    "note": "2026 trajectories; coverage and approximation limits documented in the atlas."
+  },
+  {
     "slug": "groundwork",
     "title": "Groundwork — From Ground to Home",
     "category": "Engineering",
