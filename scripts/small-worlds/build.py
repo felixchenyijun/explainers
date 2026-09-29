@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+"""Build seven standalone pages from reviewed sources. No bundler required."""
+from pathlib import Path
+import json
+import html
+ROOT=Path(__file__).resolve().parents[2]
+SRC=Path(__file__).resolve().parent
+CSP="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; media-src data:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+GAMES=[
+ ('robot','good-robot','Good Robot, Bad Instructions','An eager little robot. A reasonable reward. A very unreasonable result.','AI & incentives','#83a795'),
+ ('traffic','shortcut-city','The Shortcut That Broke the City','A new road should make the morning commute easier. Right?','Networks & game theory','#d9a582'),
+ ('cafe','little-cafe','The Café That Was Too Efficient','Run a tiny café. Make every minute count. See who ends up waiting.','Queues & uncertainty','#e8b958'),
+ ('voting','who-won','Who Actually Won?','One village. Three snacks. The same votes. Three different winners.','Voting & fairness','#aa95b5'),
+ ('fish','last-fish','The Last Fish','Four boats share a lake. How much of tomorrow will you catch today?','Cooperation & the commons','#8db6ad'),
+ ('rumor','everyone-says','Everyone Says It’s True','Eight confident people. Open their envelopes before you believe them.','Evidence & social learning','#a4b8c6'),
+]
+CSS=(SRC/'style.css').read_text()
+def head(title,desc):
+ return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="{CSP}"><meta name="description" content="{html.escape(desc)}"><meta name="theme-color" content="#f7f4ec"><title>{html.escape(title)} · Small Worlds</title><style>{CSS}</style></head>'''
+def icon(kind,color):
+ base=f'<svg viewBox="0 0 150 120" aria-hidden="true"><ellipse cx="75" cy="104" rx="49" ry="6" fill="#dddccc"/>'
+ if kind=='robot':s=f'<path d="M60 82v21m30-21v21M75 26V12M47 64L32 78m71-14l15 12" fill="none" stroke="#24362f" stroke-width="3"/><circle cx="75" cy="10" r="5" fill="#e8b958"/><rect x="44" y="28" width="62" height="45" rx="12" fill="{color}" stroke="#24362f" stroke-width="2.5"/><rect x="55" y="76" width="40" height="17" rx="5" fill="{color}"/><rect x="54" y="40" width="42" height="22" rx="7" fill="#f1f5df"/><circle cx="65" cy="49" r="3" fill="#24362f"/><circle cx="85" cy="49" r="3" fill="#24362f"/><path d="M69 55q6 6 12 0" fill="none" stroke="#24362f" stroke-width="2"/>'
+ elif kind=='traffic':s=f'<path d="M20 62L75 20L132 62L75 101zM75 20V101" fill="none" stroke="#b8bfaf" stroke-width="12"/><path d="M75 20v81" stroke="{color}" stroke-width="8"/><rect x="18" y="49" width="18" height="29" rx="4" fill="#3b657e"/><rect x="101" y="75" width="24" height="15" rx="4" fill="#b34327"/><circle cx="75" cy="62" r="8" fill="#e8b958"/>'
+ elif kind=='cafe':s=f'<path d="M40 50h60v32q0 25-30 25T40 82z" fill="{color}" stroke="#24362f" stroke-width="2.5"/><path d="M100 57h10q28 17-10 32M58 35q-10-12 0-23M78 35q10-12 0-23" fill="none" stroke="#24362f" stroke-width="3"/><circle cx="59" cy="73" r="3"/><circle cx="81" cy="73" r="3"/><path d="M63 84q8 8 16 0" fill="none" stroke="#24362f" stroke-width="2"/>'
+ elif kind=='voting':s=f'<rect x="31" y="57" width="90" height="48" rx="5" fill="{color}" stroke="#24362f" stroke-width="2.5"/><path d="M52 67h48" stroke="#24362f" stroke-width="4"/><g transform="rotate(-12 75 47)"><path d="M53 7h45v61H53z" fill="#fff9ed" stroke="#24362f" stroke-width="2.5"/><path d="M63 37l10 10 16-24" fill="none" stroke="#3f765a" stroke-width="4"/></g>'
+ elif kind=='fish':s=f'<path d="M18 65q60-16 118 0v41H18z" fill="#c6dbd2"/><path d="M29 51h69L84 70H44z" fill="#b97b55" stroke="#24362f" stroke-width="2"/><path d="M61 51V8l29 32H61" fill="#fff9ed" stroke="#24362f" stroke-width="2"/><ellipse cx="92" cy="90" rx="18" ry="9" fill="{color}" stroke="#426550" stroke-width="2"/><path d="M108 90l13-9v18z" fill="{color}"/><circle cx="83" cy="87" r="2"/>'
+ else:s=f'<path d="M25 17h81q18 0 18 18v27q0 15-18 15H69L47 97V77H25q-15 0-15-15V35q0-18 15-18z" fill="{color}" stroke="#24362f" stroke-width="2.5"/><circle cx="42" cy="46" r="5" fill="#b34327"/><circle cx="68" cy="46" r="5" fill="#b34327"/><circle cx="94" cy="46" r="5" fill="#b34327"/>'
+ return base+s+'</svg>'
+for kind,slug,title,desc,theme,color in GAMES:
+ scripts='\n'.join((SRC/f).read_text() for f in ['models.js','shared.js',kind+'.js','engine.js'])
+ page=head(title,desc)+f'''<body><a class="skip" href="#app">Skip to the game</a><header class="mast"><a class="brand" href="../small-worlds/">small <span>worlds</span></a><div class="mast-right"><span class="volume">{theme.upper()}</span><button class="textbtn" data-do="motion" id="motion" aria-pressed="true">Motion on</button><button class="textbtn" data-do="lab" id="mode">Sandbox</button></div></header><main id="app"></main><noscript><p>This game needs JavaScript to run its simulations. All code is included in this page; no sign-in or network connection is required after loading.</p></noscript><footer class="foot"><button class="textbtn" data-do="back" id="back">← Previous chapter</button><a href="../small-worlds/">All six worlds</a><button class="textbtn" data-do="restart">Start over</button></footer><div id="reset-confirm" hidden style="text-align:center;padding:20px"><p>Restart this story and clear its saved progress on this device?</p><button class="btn secondary" data-do="cancel-reset">Keep playing</button> <button class="btn" data-do="confirm-reset">Restart story</button></div><script>{scripts}</script></body></html>'''
+ out=ROOT/'docs'/slug;out.mkdir(exist_ok=True);(out/'index.html').write_text(page)
+rows=[]
+for i,(kind,slug,title,desc,theme,color) in enumerate(GAMES,1):
+ rows.append(f'<li><a class="game-link" href="../{slug}/"><span class="ordinal">0{i}</span>{icon(kind,color)}<div><span class="tag">{theme}</span><h2>{title}</h2><p>{desc}</p><span class="note" data-progress="{slug}" style="display:block;text-align:left;margin:7px 0 0">A short story + a sandbox</span></div><span class="arrow">↗</span></a></li>')
+page=head('Six little games about a complicated world','Learn by making choices. Six original playable stories about AI rewards, traffic, queues, voting, shared resources, and the wisdom of crowds.')+f'''<body><header class="mast"><a class="brand" href="../">Felix Chen / explainers</a><span class="volume">SIX PLAYABLE STORIES</span></header><main><div class="collection-top"><div><p class="eyebrow">Learn a little. Change your mind.</p><h1 class="collection-title">Small <em>worlds.</em></h1><p class="collection-intro">Make a choice. Watch what happens.<br>Then change the rules and try again.</p></div>{icon('robot','#83a795')}</div><p class="note" style="text-align:left;margin:0">Start anywhere. Each world has a story, a new situation to test your understanding, and a sandbox. Your place is saved on this device.</p><ol class="game-list">{''.join(rows)}</ol><div class="collection-note">Inspired by <a href="https://ncase.me/trust/">The Evolution of Trust</a> by Nicky Case. These are original, simplified models; each game explains its assumptions and links to its sources. No accounts and no tracking.</div></main><script>for(const el of document.querySelectorAll('[data-progress]')){{try{{const s=JSON.parse(localStorage.getItem('small-worlds-v1-'+el.dataset.progress));if(s)el.textContent=s.completed?'Story completed · play again or experiment':'Continue at chapter '+(s.chapter+1)+' of 7';}}catch{{}}}}</script></body></html>'''
+out=ROOT/'docs'/'small-worlds';out.mkdir(exist_ok=True);(out/'index.html').write_text(page)
+print('Built six games and the Small Worlds collection.')

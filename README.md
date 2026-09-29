@@ -4,7 +4,7 @@ Interactive educational explainers by Felix Chen.
 
 **Site:** https://felixchenyijun.github.io/explainers/
 
-The public collection covers the jagged AI frontier, inference, GPUs and TPUs, physical AI, operating systems, Kubernetes, Lean and gene-centered evolution. Each page contains its assumptions, research dates and references.
+The public collection includes Small Worlds—a series of six playable stories about incentives, networks, queues, voting, shared resources and social learning—as well as the jagged AI frontier, inference, GPUs and TPUs, physical AI, operating systems, Kubernetes, Lean and gene-centered evolution. Each page contains its assumptions, research dates and references.
 
 ## Publish
 
