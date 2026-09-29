@@ -1,5 +1,13 @@
 [
   {
+    "slug": "bow-legs",
+    "title": "Bow legs, from the inside",
+    "category": "Anatomy",
+    "description": "Explore how leg alignment changes the geometry of the knee. Reveal muscles, inspect cartilage and menisci, and connect the mechanics to symptoms and assessment.",
+    "format": "Interactive 3D anatomy · 6 lessons",
+    "note": "Educational anatomy; not an individual diagnosis."
+  },
+  {
     "slug": "small-worlds",
     "title": "Small Worlds",
     "category": "Playable stories",
