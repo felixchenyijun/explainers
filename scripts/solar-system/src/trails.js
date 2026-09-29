@@ -59,10 +59,11 @@ export class MotionTrails{
   for(const [id,line] of this.bodies)if(line.userData.small&&id!==state.selected.id)line.visible=false;
   if(state.selected.basis&&this.bodies.has(state.selected.id))this.bodies.get(state.selected.id).userData.small=true;
   if(this.small){
+   const wasVisible=this.small.visible;
    this.small.visible=state.flags.trails&&state.flags.small&&state.distance>.2*AU;
    if(this.small.visible){
     const p=this.small.geometry.attributes.position.array;
-    if(refresh&&this.lastJD!==state.jd||state.direction!==this.direction){
+    if(!wasVisible||!Number.isFinite(this.lastJD)||(refresh&&this.lastJD!==state.jd)||state.direction!==this.direction){
      const sample=new Float64Array(3);
      for(let i=0;i<this.smallBodies.length;i++){
       const b=this.smallBodies[i],span=Math.min(120,Math.max(.01,b.period*.003));
